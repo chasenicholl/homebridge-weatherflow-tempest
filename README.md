@@ -7,7 +7,7 @@
 <img src="https://weatherflow.com/wp-content/uploads/2016/05/Tempest-powered-by-01.svg" width="250">
 </p>
 
-Homebridge Plugin providing basic WeatherFlow Tempest support. Including Temperature Sensor, Humidity Sensor, Light Sensor and Fan (Wind Speed).
+Homebridge Plugin providing basic WeatherFlow Tempest support. Including Temperature Sensor, Humidity Sensor, Light Sensor and Fan (Wind Speed, 0-100mph).
 
 ### Setup and Parameters
 

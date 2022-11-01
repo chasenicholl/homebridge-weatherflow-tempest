@@ -2,7 +2,7 @@
   "private": false,
   "displayName": "Homebridge WeatherFlow Tempest",
   "name": "homebridge-weatherflow-tempest",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Exposes WeatherFlow Tempest Station data as Temperature Sensors, Light Sensors, Humidity Sensors and Fan Sensors (for Wind Speed).",
   "license": "Apache-2.0",
   "repository": {

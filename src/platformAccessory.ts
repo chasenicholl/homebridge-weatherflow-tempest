@@ -41,10 +41,10 @@ class TemperatureSensor {
       const value_key: string = this.accessory.context.device.value_key;
       const temperature: number = parseFloat(this.platform.observation_data['obs'][0][value_key]);
       if (temperature > 100.00) {
-        this.platform.log.warn(`WeatherFlow Tempest is reporting temperatures exceeding 100c: ${temperature}c`);
+        this.platform.log.debug(`WeatherFlow Tempest is reporting temperatures exceeding 100c: ${temperature}c`);
         return 100;
       } else if (temperature < -271.00) {
-        this.platform.log.warn(`WeatherFlow Tempest is reporting temperatures less than -271c: ${temperature}c`);
+        this.platform.log.debug(`WeatherFlow Tempest is reporting temperatures less than -271c: ${temperature}c`);
         return -271.00;
       } else {
         return temperature;
@@ -100,7 +100,7 @@ class LightSensor {
       const value_key: string = this.accessory.context.device.value_key;
       const lux: number = parseFloat(this.platform.observation_data['obs'][0][value_key]);
       if (lux < 0.0001) {
-        this.platform.log.warn(`WeatherFlow Tempest is reporting lux less than 0.0001: ${lux}`);
+        this.platform.log.debug(`WeatherFlow Tempest is reporting lux less than 0.0001: ${lux}`);
         return 0.0001;
       }
       return lux;
@@ -154,10 +154,10 @@ class HumiditySensor {
       const value_key: string = this.accessory.context.device.value_key;
       const relative_humidity: number = parseInt(this.platform.observation_data['obs'][0][value_key]);
       if (relative_humidity > 100) {
-        this.platform.log.warn(`WeatherFlow Tempest is reporting relative humidity exceeding 100%: ${relative_humidity}%`);
+        this.platform.log.debug(`WeatherFlow Tempest is reporting relative humidity exceeding 100%: ${relative_humidity}%`);
         return 100;
       } else if (relative_humidity < 0) {
-        this.platform.log.warn(`WeatherFlow Tempest is reporting relative humidity less than 0%: ${relative_humidity}%`);
+        this.platform.log.debug(`WeatherFlow Tempest is reporting relative humidity less than 0%: ${relative_humidity}%`);
         return 0;
       } else {
         return relative_humidity;
@@ -215,10 +215,10 @@ class Fan {
       const value_key: string = this.accessory.context.device.value_key;
       const speed: number = parseInt(this.platform.observation_data['obs'][0][value_key]);
       if (speed > 100) {
-        this.platform.log.warn(`WeatherFlow Tempest is reporting wind speed exceeding 100mph: ${speed}mph`);
+        this.platform.log.debug(`WeatherFlow Tempest is reporting wind speed exceeding 100mph: ${speed}mph`);
         return 100;
       } else if (speed < 0) {
-        this.platform.log.warn(`WeatherFlow Tempest is reporting wind speed less than 0mph: ${speed}mph`);
+        this.platform.log.debug(`WeatherFlow Tempest is reporting wind speed less than 0mph: ${speed}mph`);
         return 0;
       } else {
         return speed;
