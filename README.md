@@ -7,7 +7,7 @@
 
 # Homebridge WeatherFlow Tempest Plugin
 
-Homebridge Plugin Providing basic WeatherFlow Tempest support. Including Light Sensor, Temperature Sensor and Fan (Wind Speed).
+Homebridge Plugin providing basic WeatherFlow Tempest support. Including Temperature Sensor, Humidity Sensor, Light Sensor and Fan (Wind Speed).
 
 ### Setup and Parameters
 
