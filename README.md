@@ -1,11 +1,11 @@
+# Homebridge WeatherFlow Tempest Plugin
+
+[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins) ![npm-version](https://badgen.net/npm/v/homebridge-weatherflow-tempest?icon=npm&label) ![npm-dl](https://badgen.net/npm/dt/homebridge-weatherflow-tempest?icon=npm&label) [![donate](https://badgen.net/badge/donate/paypal/yellow)](https://paypal.me/chasenicholl)
 
 <p align="center">
 <img src="https://github.com/homebridge/branding/raw/master/logos/homebridge-wordmark-logo-vertical.png" width="150">
-<br />
 <img src="https://weatherflow.com/wp-content/uploads/2016/05/Tempest-powered-by-01.svg" width="250">
 </p>
-
-# Homebridge WeatherFlow Tempest Plugin
 
 Homebridge Plugin providing basic WeatherFlow Tempest support. Including Temperature Sensor, Humidity Sensor, Light Sensor and Fan (Wind Speed).
 
