@@ -1,5 +1,5 @@
 {
-  "private": true,
+  "private": false,
   "displayName": "Homebridge WeatherFlow Tempest",
   "name": "homebridge-weatherflow-tempest",
   "version": "1.0.0",
@@ -10,7 +10,7 @@
     "url": "https://github.com/chasenicholl/homebridge-weatherflow-tempest.git"
   },
   "bugs": {
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME/issues"
+    "url": "https://github.com/chasenicholl/homebridge-weatherflow-tempest/issues"
   },
   "engines": {
     "node": ">=14.18.1",
