@@ -19,7 +19,7 @@ You will need to create an account at https://tempestwx.com/ and then generate a
 - `interval`: _(Required)_ How often to poll the Tempest REST API. Default 10 seconds. Minimum every second.
 - `sensors`: _(Required)_ An array of sensors to create. This is dynamic incase you want to target different temperature or wind speed attributes.
 - `sensors.name`: _(Required)_ Display name of Sensor in Apple Home.
-- `sensors.sensor_type`: _(Required)_ The type of Home Sensor to create. There are 3 options ["Light Sensor", "Temperature Sensor", "Fan"].
+- `sensors.sensor_type`: _(Required)_ The type of Home Sensor to create. There are 4 options ["Temperature Sensor", "Light Sensor", "Humidity Sensor", "Fan"].
 - `sensors.value_key`: _(Required)_ Which REST API response body key to target for its value. If you'd like to use different temperature or wind speeds. You can find the available keys here: https://weatherflow.github.io/Tempest/api/swagger/#!/observations/getStationObservation.
 
 #### Config Example
@@ -37,15 +37,20 @@ You will need to create an account at https://tempestwx.com/ and then generate a
       "value_key": "air_temperature"
     },
     {
-       "name": "Outside Wind Speed",
-       "sensor_type": "Fan",
-       "value_key": "wind_avg"
+       "name": "Outside Relative Humidity",
+       "sensor_type": "Humidity Sensor",
+       "value_key": "relative_humidity"
     },
     {
        "name": "Outside Light Level",
        "sensor_type": "Light Sensor",
        "value_key": "brightness"
-    }
+    },
+    {
+       "name": "Outside Wind Speed",
+       "sensor_type": "Fan",
+       "value_key": "wind_avg"
+    },
   ],
   "platform": "WeatherFlowTempest"
 }

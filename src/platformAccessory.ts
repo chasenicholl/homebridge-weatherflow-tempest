@@ -152,19 +152,19 @@ class HumiditySensor {
   private getCurrentRelativeHumidity(): number {
     try {
       const value_key: string = this.accessory.context.device.value_key;
-      const relative_humidity: number = parseInt(this.platform.observation_data['obs'][0][value_key]);
-      if (relative_humidity > 100) {
+      const relative_humidity: number = parseFloat(this.platform.observation_data['obs'][0][value_key]);
+      if (relative_humidity > 100.0) {
         this.platform.log.warn(`WeatherFlow Tempest is reporting relative humidity exceeding 100%: ${relative_humidity}%`);
-        return 100;
+        return 100.0;
       } else if (relative_humidity < 0) {
         this.platform.log.warn(`WeatherFlow Tempest is reporting relative humidity less than 0%: ${relative_humidity}%`);
-        return 0;
+        return 0.0;
       } else {
         return relative_humidity;
       }
     } catch(exception) {
       this.platform.log.error(exception as string);
-      return 0;
+      return 0.0;
     }
   }
 
