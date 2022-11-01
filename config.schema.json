@@ -1,0 +1,53 @@
+{
+  "pluginAlias": "WeatherFlowTempest",
+  "pluginType": "platform",
+  "singular": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true,
+        "default": "WeatherFlow Tempest Platform"
+      },
+      "token": {
+        "title": "Token",
+        "type": "string",
+        "required": true
+      },
+      "station_id": {
+        "title": "Station ID",
+        "type": "string",
+        "required": true
+      },
+      "interval": {
+        "type": "integer",
+        "default": 10,
+        "minimum": 1
+      },
+      "sensors": {
+        "title": "Weather Sensors",
+        "description": "Enable WeatherFlow Tempest Sensors.",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "sensor_type": {
+                "type": "string",
+                "enum": ["Light Sensor", "Temperature Sensor", "Fan"]
+            },
+            "value_key": {
+              "type": "string"
+            }
+            
+          }
+        },
+        "required": ["name", "sensor_type", "value_key"]
+      }
+    }
+  }
+}
