@@ -46,7 +46,7 @@ You will need to create an account at https://tempestwx.com/ and then generate a
        "sensor_type": "Light Sensor",
        "value_key": "brightness"
     }
-],
-"platform": "WeatherFlowTempest"
+  ],
+  "platform": "WeatherFlowTempest"
 }
 ```
