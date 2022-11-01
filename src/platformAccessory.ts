@@ -1,7 +1,7 @@
 import { Service, PlatformAccessory } from 'homebridge';
 import { WeatherFlowTempestPlatform } from './platform';
 
-class Fan {
+class TemperatureSensor {
   private service: Service;
 
   constructor(
@@ -9,45 +9,61 @@ class Fan {
     private readonly accessory: PlatformAccessory,
   ) {
 
-    this.service = this.accessory.getService(this.platform.Service.Fan) ||
-    this.accessory.addService(this.platform.Service.Fan);
-
-    // The air is always moving a lil' bit. If this isn't true we are all screwed.
-    this.service.setCharacteristic(this.platform.Characteristic.On, true);
+    // Get or Add Service to Accessory
+    this.service = this.accessory.getService(this.platform.Service.TemperatureSensor) ||
+    this.accessory.addService(this.platform.Service.TemperatureSensor);
 
     // Create handlers for required characteristics
-    this.service.getCharacteristic(this.platform.Characteristic.RotationSpeed)
-      .onGet(this.handleCurrentRotationSpeedGet.bind(this));
+    this.service.getCharacteristic(this.platform.Characteristic.CurrentTemperature)
+      .onGet(this.handleCurrentTemperatureGet.bind(this));
 
-    // Set initial value
-    this.service.getCharacteristic(this.platform.Characteristic.RotationSpeed).updateValue(this.getCurrentWindSpeed());
+    // Set Current Temperature
+    this.service.getCharacteristic(
+      this.platform.Characteristic.CurrentTemperature).updateValue(this.getCurrentTemperature(),
+    );
 
     // Update value based on user defined global interval
     const interval = (this.platform.config.interval as number || 10) * 1000;
     setInterval( () => {
-      this.service.getCharacteristic(this.platform.Characteristic.RotationSpeed).updateValue(this.getCurrentWindSpeed());
+      this.service.getCharacteristic(
+        this.platform.Characteristic.CurrentTemperature).updateValue(this.getCurrentTemperature(),
+      );
     }, interval);
 
   }
 
-  private getCurrentWindSpeed(): number {
+  /**
+   * Get the current temperature from the global observation object. Convert to F if station units_temp is F.
+   */
+  private getCurrentTemperature(): number {
+
     try {
       const value_key: string = this.accessory.context.device.value_key;
-      const speed: number = parseInt(this.platform.observation_data['obs'][0][value_key]);
-      return (speed > 100) ? 100 : Math.round(speed);
+      const temperature: number = parseFloat(this.platform.observation_data['obs'][0][value_key]);
+      if (temperature > 100.00) {
+        this.platform.log.warn(`WeatherFlow Tempest is reporting temperatures exceeding 100c: ${temperature}c`);
+        return 100;
+      } else if (temperature < -271.00) {
+        this.platform.log.warn(`WeatherFlow Tempest is reporting temperatures less than -271c: ${temperature}c`);
+        return -271.00;
+      } else {
+        return temperature;
+      }
     } catch(exception) {
       this.platform.log.error(exception as string);
-      return 0;
+      return -270;
     }
+
   }
 
   /**
-   * Handle requests to get the current value of the "Current Rotation Speed" characteristic
+   * Handle requests to get the current value of the "Current Temperature" characteristic
    */
-  private handleCurrentRotationSpeedGet(): number {
+  private handleCurrentTemperatureGet(): number {
 
-    this.platform.log.debug('Triggered GET RotationSpeed');
-    return this.getCurrentWindSpeed();
+    this.platform.log.debug('Triggered GET CurrentTemperature');
+    const temperature: number = this.getCurrentTemperature();
+    return temperature;
 
   }
 
@@ -82,11 +98,15 @@ class LightSensor {
   private getCurrentLux(): number {
     try {
       const value_key: string = this.accessory.context.device.value_key;
-      const lux: number = parseInt(this.platform.observation_data['obs'][0][value_key]);
+      const lux: number = parseFloat(this.platform.observation_data['obs'][0][value_key]);
+      if (lux < 0.0001) {
+        this.platform.log.warn(`WeatherFlow Tempest is reporting lux less than 0.0001: ${lux}`);
+        return 0.0001;
+      }
       return lux;
     } catch(exception) {
       this.platform.log.error(exception as string);
-      return -1;
+      return 0.0001;
     }
   }
 
@@ -103,65 +123,119 @@ class LightSensor {
 
 }
 
-class TemperatureSensor {
+class HumiditySensor {
   private service: Service;
-  private is_celsius: boolean;
 
   constructor(
     private readonly platform: WeatherFlowTempestPlatform,
     private readonly accessory: PlatformAccessory,
   ) {
 
-    // Get or Add Service to Accessory
-    this.service = this.accessory.getService(this.platform.Service.TemperatureSensor) ||
-    this.accessory.addService(this.platform.Service.TemperatureSensor);
-
-    // Are we using metric? Note* not used right now.
-    this.is_celsius = this.platform.observation_data['station_units']['units_temp'] === 'c';
+    this.service = this.accessory.getService(this.platform.Service.HumiditySensor) ||
+    this.accessory.addService(this.platform.Service.HumiditySensor);
 
     // Create handlers for required characteristics
-    this.service.getCharacteristic(this.platform.Characteristic.CurrentTemperature)
-      .onGet(this.handleCurrentTemperatureGet.bind(this));
+    this.service.getCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity)
+      .onGet(this.handleCurrentRelativeHumidityGet.bind(this));
 
-    // Set Current Temperature
-    this.service.getCharacteristic(
-      this.platform.Characteristic.CurrentTemperature).updateValue(this.getCurrentTemperature(),
-    );
+    // Set initial value
+    this.service.getCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity).updateValue(this.getCurrentRelativeHumidity());
 
     // Update value based on user defined global interval
     const interval = (this.platform.config.interval as number || 10) * 1000;
     setInterval( () => {
-      this.service.getCharacteristic(
-        this.platform.Characteristic.CurrentTemperature).updateValue(this.getCurrentTemperature(),
-      );
+      this.service.getCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity).updateValue(this.getCurrentRelativeHumidity());
     }, interval);
 
   }
 
-  /**
-   * Get the current temperature from the global observation object. Convert to F if station units_temp is F.
-   */
-  private getCurrentTemperature(): number {
-
+  private getCurrentRelativeHumidity(): number {
     try {
       const value_key: string = this.accessory.context.device.value_key;
-      const c: number = parseFloat(this.platform.observation_data['obs'][0][value_key]);
-      return c; // return this.is_celsius ? c : (c * 9/5) + 32;
+      const relative_humidity: number = parseInt(this.platform.observation_data['obs'][0][value_key]);
+      if (relative_humidity > 100) {
+        this.platform.log.warn(`WeatherFlow Tempest is reporting relative humidity exceeding 100%: ${relative_humidity}%`);
+        return 100;
+      } else if (relative_humidity < 0) {
+        this.platform.log.warn(`WeatherFlow Tempest is reporting relative humidity less than 0%: ${relative_humidity}%`);
+        return 0;
+      } else {
+        return relative_humidity;
+      }
     } catch(exception) {
       this.platform.log.error(exception as string);
-      return -99;
+      return 0;
     }
-
   }
 
   /**
-   * Handle requests to get the current value of the "Current Temperature" characteristic
+   * Handle requests to get the current value of the "Current Ambient Light Level" characteristic
    */
-  private handleCurrentTemperatureGet(): number {
+  private handleCurrentRelativeHumidityGet(): number {
 
-    this.platform.log.debug('Triggered GET CurrentTemperature');
-    const temperature: number = this.getCurrentTemperature();
-    return temperature;
+    this.platform.log.debug('Triggered GET CurrentRelativeHumidity');
+    const lux: number = this.getCurrentRelativeHumidity();
+    return lux;
+
+  }
+
+}
+
+class Fan {
+  private service: Service;
+
+  constructor(
+    private readonly platform: WeatherFlowTempestPlatform,
+    private readonly accessory: PlatformAccessory,
+  ) {
+
+    this.service = this.accessory.getService(this.platform.Service.Fan) ||
+    this.accessory.addService(this.platform.Service.Fan);
+
+    // The air is always moving a lil' bit. If this isn't true we are all screwed.
+    this.service.setCharacteristic(this.platform.Characteristic.On, true);
+
+    // Create handlers for required characteristics
+    this.service.getCharacteristic(this.platform.Characteristic.RotationSpeed)
+      .onGet(this.handleCurrentRotationSpeedGet.bind(this));
+
+    // Set initial value
+    this.service.getCharacteristic(this.platform.Characteristic.RotationSpeed).updateValue(this.getCurrentWindSpeed());
+
+    // Update value based on user defined global interval
+    const interval = (this.platform.config.interval as number || 10) * 1000;
+    setInterval( () => {
+      this.service.getCharacteristic(this.platform.Characteristic.RotationSpeed).updateValue(this.getCurrentWindSpeed());
+    }, interval);
+
+  }
+
+  private getCurrentWindSpeed(): number {
+    try {
+      const value_key: string = this.accessory.context.device.value_key;
+      const speed: number = parseInt(this.platform.observation_data['obs'][0][value_key]);
+      if (speed > 100) {
+        this.platform.log.warn(`WeatherFlow Tempest is reporting wind speed exceeding 100mph: ${speed}mph`);
+        return 100;
+      } else if (speed < 0) {
+        this.platform.log.warn(`WeatherFlow Tempest is reporting wind speed less than 0mph: ${speed}mph`);
+        return 0;
+      } else {
+        return speed;
+      }
+    } catch(exception) {
+      this.platform.log.error(exception as string);
+      return 0;
+    }
+  }
+
+  /**
+   * Handle requests to get the current value of the "Current Rotation Speed" characteristic
+   */
+  private handleCurrentRotationSpeedGet(): number {
+
+    this.platform.log.debug('Triggered GET RotationSpeed');
+    return this.getCurrentWindSpeed();
 
   }
 
@@ -183,74 +257,22 @@ export class WeatherFlowTempestPlatformAccessory {
       .setCharacteristic(this.platform.Characteristic.Model, `Tempest - ${this.accessory.context.device.name}`)
       .setCharacteristic(this.platform.Characteristic.SerialNumber, '000');
 
-    // ["Light Sensor", "Temperature Sensor", "Fan"]
+    // ["Temperature Sensor", "Light Sensor", "Humidity Sensor", "Fan"]
     switch (this.accessory.context.device.sensor_type) {
-      case 'Fan':
-        new Fan(this.platform, this.accessory);
+      case 'Temperature Sensor':
+        new TemperatureSensor(this.platform, this.accessory);
         break;
       case 'Light Sensor':
         new LightSensor(this.platform, this.accessory);
         break;
-      case 'Temperature Sensor':
-        new TemperatureSensor(this.platform, this.accessory);
+      case 'Humidity Sensor':
+        new HumiditySensor(this.platform, this.accessory);
+        break;
+      case 'Fan':
+        new Fan(this.platform, this.accessory);
         break;
     }
 
   }
-
-  // Incase we ever need a Switch to trigger things.
-  // class Switch {
-  //   private service: Service;
-  //   private is_on: boolean = false;
-
-  //   constructor(
-  //     private readonly platform: WeatherFlowTempestPlatform,
-  //     private readonly accessory: PlatformAccessory,
-  //   ) {
-  //     this.service = this.accessory.getService(this.platform.Service.Switch) ||
-  //     this.accessory.addService(this.platform.Service.Switch);
-
-  //     // Register handlers for the On/Off Characteristic
-  //     this.service.getCharacteristic(this.platform.Characteristic.On)
-  //       .on('set', this.setOn.bind(this))
-  //       .on('get', this.getOn.bind(this));
-
-  //     // Default Switch to Off
-  //     this.service.setCharacteristic(this.platform.Characteristic.On, this.is_on);
-
-  //     // Update value based on user defined global interval
-  //     const interval = (this.platform.config.interval as number || 10) * 1000;
-  //     setInterval( () => {
-  //       try {
-  //         const current_value: number = this.platform.observation_data['obs'][0][this.accessory.context.value_key];
-  //         const trigger_value: number = this.accessory.context.trigger_value;
-  //         if (current_value >= trigger_value) {
-  //           this.service.setCharacteristic(this.platform.Characteristic.On, true);
-  //         } else {
-  //           this.service.setCharacteristic(this.platform.Characteristic.On, false);
-  //         }
-  //       } catch(exception) {
-  //         this.platform.log.error(exception as string);
-  //       }
-  //     }, interval);
-
-  //   }
-
-  //   private getOn(callback: CharacteristicGetCallback) {
-
-  //     const is_on = this.is_on;
-  //     this.platform.log.debug(`[${this.accessory.displayName}] Get Characteristic On -> ${is_on}`);
-  //     callback(null, is_on);
-
-  //   }
-
-  //   private setOn(value: CharacteristicValue, callback: CharacteristicSetCallback) {
-
-  //     this.is_on = value as boolean;
-  //     this.platform.log.debug(`[${this.accessory.displayName}] Set Characteristic On -> ${value}`);
-  //     callback(null);
-
-  //   }
-  // }
 
 }

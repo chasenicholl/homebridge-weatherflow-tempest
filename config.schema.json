@@ -38,7 +38,7 @@
             },
             "sensor_type": {
                 "type": "string",
-                "enum": ["Light Sensor", "Temperature Sensor", "Fan"]
+                "enum": ["Temperature Sensor", "Light Sensor", "Humidity Sensor", "Fan"]
             },
             "value_key": {
               "type": "string"

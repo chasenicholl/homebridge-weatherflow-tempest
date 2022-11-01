@@ -107,23 +107,4 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
   }
 
-  // private initSwitchAccessory(device: TempestSwitch) {
-
-  //   const uuid = this.api.hap.uuid.generate(
-  //     `${device.name}-${device.value_key}-${device.trigger_value}-switch`
-  //   );
-  //   const existingSwitch = this.accessories.find(accessory => accessory.UUID === uuid);
-  //   if (existingSwitch) {
-  //     this.log.info('Restoring existing switch from cache:', existingSwitch.displayName);
-  //     new WeatherFlowTempestPlatformAccessory(this, existingSwitch);
-  //   } else {
-  //     this.log.info('Adding new switch:', device.name);
-  //     const switch_accessory = new this.api.platformAccessory(device.name, uuid);
-  //     switch_accessory.context.device = device;
-  //     new WeatherFlowTempestPlatformAccessory(this, switch_accessory);
-  //     this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [switch_accessory]);
-  //   }
-
-  // }
-
 }
