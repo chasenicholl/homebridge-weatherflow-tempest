@@ -34,22 +34,22 @@ export class TempestApi {
     this.token = token;
     this.station_id = station_id;
 
-    this.log.info("TempestApi initialized.");
+    this.log.info('TempestApi initialized.');
 
   }
 
   public async getStationCurrentObservation() {
 
-    let url: string = `https://swd.weatherflow.com/swd/rest/observations/station/${this.station_id}`;
+    const url = `https://swd.weatherflow.com/swd/rest/observations/station/${this.station_id}`;
     try {
       const body: AxiosResponse = await axios.get(
         url, {
           headers: {
             'Authorization': `Bearer ${this.token}`,
-            'Accept': 'application/json'
+            'Accept': 'application/json',
           },
-          responseType: 'json'
-        }
+          responseType: 'json',
+        },
       );
       this.log.debug(`[WeatherFlow] Response Code: ${body.status.toString()}`);
       return body.data;

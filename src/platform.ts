@@ -28,7 +28,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     public readonly config: PlatformConfig,
     public readonly api: API,
   ) {
-  
+
     log.info('Finished initializing platform:', this.config.name);
     this.tempestApi = new TempestApi(this.config.token, this.config.station_id, log);
     this.api.on('didFinishLaunching', () => {
@@ -45,7 +45,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
         this.log.info(exception as string);
       }
     });
-  
+
   }
 
   private pollStationCurrentObservation() {
@@ -91,7 +91,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
   private initAccessory(device: TempestSensor) {
 
     const uuid = this.api.hap.uuid.generate(
-      `${device.name}-${device.sensor_type}-${device.value_key}`
+      `${device.name}-${device.sensor_type}-${device.value_key}`,
     );
     const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
     if (existingAccessory) {
@@ -108,7 +108,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
   }
 
   // private initSwitchAccessory(device: TempestSwitch) {
-  
+
   //   const uuid = this.api.hap.uuid.generate(
   //     `${device.name}-${device.value_key}-${device.trigger_value}-switch`
   //   );
@@ -123,7 +123,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
   //     new WeatherFlowTempestPlatformAccessory(this, switch_accessory);
   //     this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [switch_accessory]);
   //   }
-  
+
   // }
 
 }

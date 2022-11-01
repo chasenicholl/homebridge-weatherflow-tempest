@@ -1,12 +1,4 @@
-import { 
-  Service, 
-  PlatformAccessory,
-  CharacteristicGetCallback,
-  CharacteristicSetCallback,
-  CharacteristicValue
-} from 'homebridge';
-import { callbackify } from 'util';
-
+import { Service, PlatformAccessory } from 'homebridge';
 import { WeatherFlowTempestPlatform } from './platform';
 
 class Fan {
@@ -26,7 +18,7 @@ class Fan {
     // Create handlers for required characteristics
     this.service.getCharacteristic(this.platform.Characteristic.RotationSpeed)
       .onGet(this.handleCurrentRotationSpeedGet.bind(this));
-    
+
     // Set initial value
     this.service.getCharacteristic(this.platform.Characteristic.RotationSpeed).updateValue(this.getCurrentWindSpeed());
 
@@ -52,11 +44,11 @@ class Fan {
   /**
    * Handle requests to get the current value of the "Current Rotation Speed" characteristic
    */
-   private handleCurrentRotationSpeedGet(): number {
+  private handleCurrentRotationSpeedGet(): number {
 
     this.platform.log.debug('Triggered GET RotationSpeed');
     return this.getCurrentWindSpeed();
-  
+
   }
 
 }
@@ -101,12 +93,12 @@ class LightSensor {
   /**
    * Handle requests to get the current value of the "Current Ambient Light Level" characteristic
    */
-   private handleCurrentAmbientLightLevelGet(): number {
+  private handleCurrentAmbientLightLevelGet(): number {
 
     this.platform.log.debug('Triggered GET CurrentAmbientLightLevel');
     const lux: number = this.getCurrentLux();
     return lux;
-  
+
   }
 
 }
@@ -133,14 +125,14 @@ class TemperatureSensor {
 
     // Set Current Temperature
     this.service.getCharacteristic(
-      this.platform.Characteristic.CurrentTemperature).updateValue(this.getCurrentTemperature()
+      this.platform.Characteristic.CurrentTemperature).updateValue(this.getCurrentTemperature(),
     );
 
     // Update value based on user defined global interval
     const interval = (this.platform.config.interval as number || 10) * 1000;
     setInterval( () => {
       this.service.getCharacteristic(
-        this.platform.Characteristic.CurrentTemperature).updateValue(this.getCurrentTemperature()
+        this.platform.Characteristic.CurrentTemperature).updateValue(this.getCurrentTemperature(),
       );
     }, interval);
 
@@ -154,7 +146,7 @@ class TemperatureSensor {
     try {
       const value_key: string = this.accessory.context.device.value_key;
       const c: number = parseFloat(this.platform.observation_data['obs'][0][value_key]);
-      return c; // return this.is_celsius ? c : (c * 9/5) + 32; 
+      return c; // return this.is_celsius ? c : (c * 9/5) + 32;
     } catch(exception) {
       this.platform.log.error(exception as string);
       return -99;
@@ -170,7 +162,7 @@ class TemperatureSensor {
     this.platform.log.debug('Triggered GET CurrentTemperature');
     const temperature: number = this.getCurrentTemperature();
     return temperature;
-    
+
   }
 
 }
@@ -190,7 +182,7 @@ export class WeatherFlowTempestPlatformAccessory {
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'WeatherFlow')
       .setCharacteristic(this.platform.Characteristic.Model, `Tempest - ${this.accessory.context.device.name}`)
       .setCharacteristic(this.platform.Characteristic.SerialNumber, '000');
-  
+
     // ["Light Sensor", "Temperature Sensor", "Fan"]
     switch (this.accessory.context.device.sensor_type) {
       case 'Fan':
@@ -206,59 +198,59 @@ export class WeatherFlowTempestPlatformAccessory {
 
   }
 
-// Incase we ever need a Switch to trigger things.
-// class Switch {
-//   private service: Service;
-//   private is_on: boolean = false;
+  // Incase we ever need a Switch to trigger things.
+  // class Switch {
+  //   private service: Service;
+  //   private is_on: boolean = false;
 
-//   constructor(
-//     private readonly platform: WeatherFlowTempestPlatform,
-//     private readonly accessory: PlatformAccessory,
-//   ) {
-//     this.service = this.accessory.getService(this.platform.Service.Switch) ||
-//     this.accessory.addService(this.platform.Service.Switch);
+  //   constructor(
+  //     private readonly platform: WeatherFlowTempestPlatform,
+  //     private readonly accessory: PlatformAccessory,
+  //   ) {
+  //     this.service = this.accessory.getService(this.platform.Service.Switch) ||
+  //     this.accessory.addService(this.platform.Service.Switch);
 
-//     // Register handlers for the On/Off Characteristic
-//     this.service.getCharacteristic(this.platform.Characteristic.On)
-//       .on('set', this.setOn.bind(this))
-//       .on('get', this.getOn.bind(this));
-    
-//     // Default Switch to Off
-//     this.service.setCharacteristic(this.platform.Characteristic.On, this.is_on);
+  //     // Register handlers for the On/Off Characteristic
+  //     this.service.getCharacteristic(this.platform.Characteristic.On)
+  //       .on('set', this.setOn.bind(this))
+  //       .on('get', this.getOn.bind(this));
 
-//     // Update value based on user defined global interval
-//     const interval = (this.platform.config.interval as number || 10) * 1000;
-//     setInterval( () => {
-//       try {
-//         const current_value: number = this.platform.observation_data['obs'][0][this.accessory.context.value_key];
-//         const trigger_value: number = this.accessory.context.trigger_value;
-//         if (current_value >= trigger_value) {
-//           this.service.setCharacteristic(this.platform.Characteristic.On, true);
-//         } else {
-//           this.service.setCharacteristic(this.platform.Characteristic.On, false);
-//         }
-//       } catch(exception) {
-//         this.platform.log.error(exception as string);
-//       }
-//     }, interval);
-  
-//   }
+  //     // Default Switch to Off
+  //     this.service.setCharacteristic(this.platform.Characteristic.On, this.is_on);
 
-//   private getOn(callback: CharacteristicGetCallback) {
+  //     // Update value based on user defined global interval
+  //     const interval = (this.platform.config.interval as number || 10) * 1000;
+  //     setInterval( () => {
+  //       try {
+  //         const current_value: number = this.platform.observation_data['obs'][0][this.accessory.context.value_key];
+  //         const trigger_value: number = this.accessory.context.trigger_value;
+  //         if (current_value >= trigger_value) {
+  //           this.service.setCharacteristic(this.platform.Characteristic.On, true);
+  //         } else {
+  //           this.service.setCharacteristic(this.platform.Characteristic.On, false);
+  //         }
+  //       } catch(exception) {
+  //         this.platform.log.error(exception as string);
+  //       }
+  //     }, interval);
 
-//     const is_on = this.is_on;
-//     this.platform.log.debug(`[${this.accessory.displayName}] Get Characteristic On -> ${is_on}`);
-//     callback(null, is_on);
+  //   }
 
-//   }
+  //   private getOn(callback: CharacteristicGetCallback) {
 
-//   private setOn(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+  //     const is_on = this.is_on;
+  //     this.platform.log.debug(`[${this.accessory.displayName}] Get Characteristic On -> ${is_on}`);
+  //     callback(null, is_on);
 
-//     this.is_on = value as boolean;
-//     this.platform.log.debug(`[${this.accessory.displayName}] Set Characteristic On -> ${value}`);
-//     callback(null);
+  //   }
 
-//   }
-// }
+  //   private setOn(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+
+  //     this.is_on = value as boolean;
+  //     this.platform.log.debug(`[${this.accessory.displayName}] Set Characteristic On -> ${value}`);
+  //     callback(null);
+
+  //   }
+  // }
 
 }
