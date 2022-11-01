@@ -33,10 +33,14 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     this.tempestApi = new TempestApi(this.config.token, this.config.station_id, log);
     this.api.on('didFinishLaunching', () => {
       log.info('Executed didFinishLaunching callback');
+      if (this.areSensorsSet() === false) {
+        log.info('No Sensors configured - refusing to continue.');
+        return;
+      }
       try {
         this.tempestApi.getStationCurrentObservation().then( (observation_data) => {
           this.observation_data = observation_data;
-          // Initialize switches after first API response.
+          // Initialize sensors after first API response.
           this.discoverDevices();
           // Then begin to poll the station current observations data.
           this.pollStationCurrentObservation();
@@ -77,15 +81,42 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     this.accessories.push(accessory);
   }
 
+  areSensorsSet(): boolean {
+
+    this.log.debug('Confirming sensors configured.');
+    // Make sure config.sensors is set and iterable.
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for (const device of this.config.sensors as Array<TempestSensor>) {
+        continue;
+      }
+    } catch(exception) {
+      if (exception instanceof TypeError) {
+        this.log.warn('No Sensors are configured.');
+      }
+      this.log.error(exception as string);
+      return false;
+    }
+
+    this.log.debug('Sensors configured.');
+    return true;
+
+  }
+
   /**
-   * Discover Configured Switches and optional Sensors.
+   * Discover Configured Sensors.
    */
   discoverDevices() {
 
-    for (const device of this.config.sensors as Array<TempestSensor>) {
-      // Create sensor accessory for tempest sensor value
-      this.initAccessory(device);
+    try {
+      for (const device of this.config.sensors as Array<TempestSensor>) {
+        // Create sensor accessory for tempest sensor value
+        this.initAccessory(device);
+      }
+    } catch (exception) {
+      this.log.error(exception as string);
     }
+
   }
 
   private initAccessory(device: TempestSensor) {
