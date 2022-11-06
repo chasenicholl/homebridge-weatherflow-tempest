@@ -46,7 +46,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
           this.pollStationCurrentObservation();
         });
       } catch(exception) {
-        this.log.info(exception as string);
+        this.log.error(exception as string);
       }
     });
 
@@ -56,7 +56,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
     // Poll Tempest API
     const interval = (this.config.interval as number || 10) * 1000;
-    this.log.info(`Tempest API Polling interval (ms) -> ${interval}`);
+    this.log.debug(`Tempest API Polling interval (ms) -> ${interval}`);
     const tick = () => {
       setTimeout( () => {
         this.tempestApi.getStationCurrentObservation().then( (observation_data) => {
@@ -74,14 +74,14 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
    * This function is invoked when homebridge restores cached accessories from disk at startup.
    * It should be used to setup event handlers for characteristics and update respective values.
    */
-  configureAccessory(accessory: PlatformAccessory) {
+  public configureAccessory(accessory: PlatformAccessory) {
     this.log.info('Loading accessory from cache:', accessory.displayName);
 
     // add the restored accessory to the accessories cache so we can track if it has already been registered
     this.accessories.push(accessory);
   }
 
-  areSensorsSet(): boolean {
+  private areSensorsSet(): boolean {
 
     this.log.debug('Confirming sensors configured.');
     // Make sure config.sensors is set and iterable.
@@ -106,7 +106,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
   /**
    * Discover Configured Sensors.
    */
-  discoverDevices() {
+  private discoverDevices() {
 
     try {
       for (const device of this.config.sensors as Array<TempestSensor>) {
