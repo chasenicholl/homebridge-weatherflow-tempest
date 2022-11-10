@@ -48,13 +48,18 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       log.info('Executed didFinishLaunching callback');
 
       if (this.areSensorsSet() === false) {
-        log.info('No Sensors configured - refusing to continue.');
+        log.info('No Sensors configured. Refusing to continue.');
         return;
       }
 
       try {
 
         this.tempestApi.getStationCurrentObservation().then( (observation_data: Observation) => {
+
+          if (!observation_data) {
+            log.info('Failed to fetch initial Station Current Observations after retrying. Refusing to continue.');
+            return;
+          }
 
           // Cache the observation results
           this.observation_data = observation_data;
@@ -82,14 +87,22 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     // Poll Tempest API
     const interval = (this.config.interval as number || 10) * 1000;
     this.log.debug(`Tempest API Polling interval (ms) -> ${interval}`);
+
     const tick = () => {
+
       setTimeout( () => {
-        this.tempestApi.getStationCurrentObservation().then( (observation_data) => {
+
+        this.tempestApi.getStationCurrentObservation().then( (observation_data: Observation) => {
+
           this.observation_data = observation_data;
           timer = setTimeout(tick, interval);
+
         });
+
       }, interval);
+
     };
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let timer = setTimeout(tick, interval);
 
