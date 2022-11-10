@@ -3,7 +3,7 @@ import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { WeatherFlowTempestPlatformAccessory } from './platformAccessory';
 
-import { TempestApi } from './tempestApi';
+import { TempestApi, Observation } from './tempestApi';
 
 interface TempestSensor {
   name: string;
@@ -21,7 +21,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
   public readonly accessories: PlatformAccessory[] = [];
   private tempestApi: TempestApi;
 
-  public observation_data = {}; // Observation data for Accessories to use.
+  public observation_data: Observation; // Observation data for Accessories to use.
 
   constructor(
     public readonly log: Logger,
@@ -30,24 +30,49 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
   ) {
 
     log.info('Finished initializing platform:', this.config.name);
+
+    // Initialize TempestApi
     this.tempestApi = new TempestApi(this.config.token, this.config.station_id, log);
+    this.observation_data = {
+      air_temperature: 0,
+      feels_like: 0,
+      relative_humidity: 0,
+      wind_avg: 0,
+      wind_gust: 0,
+      wind_direction: 0,
+      brightness: 0,
+    };
+
     this.api.on('didFinishLaunching', () => {
+
       log.info('Executed didFinishLaunching callback');
+
       if (this.areSensorsSet() === false) {
         log.info('No Sensors configured - refusing to continue.');
         return;
       }
+
       try {
-        this.tempestApi.getStationCurrentObservation().then( (observation_data) => {
+
+        this.tempestApi.getStationCurrentObservation().then( (observation_data: Observation) => {
+
+          // Cache the observation results
           this.observation_data = observation_data;
+
           // Initialize sensors after first API response.
           this.discoverDevices();
+
           // Then begin to poll the station current observations data.
           this.pollStationCurrentObservation();
+
         });
+
       } catch(exception) {
+
         this.log.error(exception as string);
+
       }
+
     });
 
   }
