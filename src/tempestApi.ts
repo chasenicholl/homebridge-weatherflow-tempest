@@ -51,6 +51,23 @@ export class TempestApi {
 
   }
 
+  private isResponseGood(response: AxiosResponse) {
+
+    try {
+      if (!response || !response.data) {
+        return false;
+      } else if (typeof response.data === 'string') {
+        return ('obs' in JSON.parse(response.data));
+      } else {
+        return ('obs' in response.data);
+      }
+    } catch(exception) {
+      this.log.error(exception as string);
+      return false;
+    }
+
+  }
+
   public async getStationCurrentObservation(retry_count = 0) {
 
     if (retry_count === this.max_retries) {
@@ -59,7 +76,7 @@ export class TempestApi {
     }
 
     const response: AxiosResponse | undefined = await this.getStationObservation();
-    if (!response || !response.data || !('obs' in response.data)) {
+    if (!response || !this.isResponseGood(response as AxiosResponse)) {
       this.log.warn('Response missing "obs" data.');
       if (this.data !== undefined) {
         this.log.warn('Returning last cached response.');
@@ -69,6 +86,9 @@ export class TempestApi {
       await this.delay(1000 * retry_count);
       return await this.getStationCurrentObservation(retry_count + 1);
     } else {
+      if (typeof response.data === 'string') {
+        response.data = JSON.parse(response.data);
+      }
       this.data = response.data['obs'][0];
       return this.data;
     }
