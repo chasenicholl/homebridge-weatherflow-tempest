@@ -97,6 +97,7 @@ class LightSensor {
   }
 
   private getCurrentLux(): number {
+
     try {
       const value_key: string = this.accessory.context.device.value_key;
       const lux: number = parseFloat(this.platform.observation_data[value_key]);
@@ -109,6 +110,7 @@ class LightSensor {
       this.platform.log.error(exception as string);
       return 0.0001;
     }
+
   }
 
   /**
@@ -151,6 +153,7 @@ class HumiditySensor {
   }
 
   private getCurrentRelativeHumidity(): number {
+
     try {
       const value_key: string = this.accessory.context.device.value_key;
       const relative_humidity: number = parseInt(this.platform.observation_data[value_key]);
@@ -167,6 +170,7 @@ class HumiditySensor {
       this.platform.log.error(exception as string);
       return 0;
     }
+
   }
 
   /**
@@ -177,6 +181,76 @@ class HumiditySensor {
     this.platform.log.debug('Triggered GET CurrentRelativeHumidity');
     const relative_humidity: number = this.getCurrentRelativeHumidity();
     return relative_humidity;
+
+  }
+
+}
+
+class MotionSensor {
+  private service: Service;
+
+  constructor(
+    private readonly platform: WeatherFlowTempestPlatform,
+    private readonly accessory: PlatformAccessory,
+  ) {
+
+    this.service = this.accessory.getService(this.platform.Service.MotionSensor) ||
+    this.accessory.addService(this.platform.Service.MotionSensor);
+
+    // Create handlers for required characteristics
+    this.service.getCharacteristic(this.platform.Characteristic.MotionDetected)
+      .onGet(this.handleMotionDetectedGet.bind(this));
+
+    // Set initial value
+    this.service.getCharacteristic(this.platform.Characteristic.MotionDetected).updateValue(this.isMotionDetected());
+
+    // Update value based on user defined global interval
+    const interval = (this.platform.config.interval as number || 10) * 1000;
+    setInterval( () => {
+      this.service.getCharacteristic(this.platform.Characteristic.MotionDetected).updateValue(this.isMotionDetected());
+    }, interval);
+
+  }
+
+  private getValue(): number {
+
+    try {
+      const value_key: string = this.accessory.context.device.value_key;
+      const speed: number = parseInt(this.platform.observation_data[value_key]);
+      if (speed < 0) {
+        this.platform.log.debug(`WeatherFlow Tempest Motion Sensor is reporting less than 0: ${speed}`);
+        return 0;
+      } else {
+        return speed;
+      }
+    } catch(exception) {
+      this.platform.log.error(exception as string);
+      return 0;
+    }
+
+  }
+
+  private isMotionDetected(): boolean {
+
+    const current_value = this.getValue();
+    let motion_trigger_value = 1;
+    try {
+      motion_trigger_value = this.accessory.context.device.additional_properties.motion_trigger_value;
+    } catch(exception) {
+      this.platform.log.error(exception as string);
+      this.platform.log.warn('Defaulting to 1 as motion trigger value.');
+    }
+    return current_value >= motion_trigger_value;
+
+  }
+
+  /**
+   * Handle requests to get the current value of the "Motion Detected" characteristic
+   */
+  private handleMotionDetectedGet(): boolean {
+
+    this.platform.log.debug('Triggered GET MotionDetected');
+    return this.isMotionDetected();
 
   }
 
@@ -212,6 +286,7 @@ class Fan {
   }
 
   private getCurrentWindSpeed(): number {
+
     try {
       const value_key: string = this.accessory.context.device.value_key;
       const speed: number = parseInt(this.platform.observation_data[value_key]);
@@ -228,6 +303,7 @@ class Fan {
       this.platform.log.error(exception as string);
       return 0;
     }
+
   }
 
   /**
@@ -258,7 +334,7 @@ export class WeatherFlowTempestPlatformAccessory {
       .setCharacteristic(this.platform.Characteristic.Model, `Tempest - ${this.accessory.context.device.name}`)
       .setCharacteristic(this.platform.Characteristic.SerialNumber, '000');
 
-    // ["Temperature Sensor", "Light Sensor", "Humidity Sensor", "Fan"]
+    // ["Temperature Sensor", "Light Sensor", "Humidity Sensor", "Fan", "Motion Sensor"]
     switch (this.accessory.context.device.sensor_type) {
       case 'Temperature Sensor':
         new TemperatureSensor(this.platform, this.accessory);
@@ -268,6 +344,9 @@ export class WeatherFlowTempestPlatformAccessory {
         break;
       case 'Humidity Sensor':
         new HumiditySensor(this.platform, this.accessory);
+        break;
+      case 'Motion Sensor':
+        new MotionSensor(this.platform, this.accessory);
         break;
       case 'Fan':
         new Fan(this.platform, this.accessory);
