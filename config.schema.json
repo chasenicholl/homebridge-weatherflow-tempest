@@ -1,53 +1,77 @@
 {
-  "pluginAlias": "WeatherFlowTempest",
-  "pluginType": "platform",
-  "singular": true,
-  "schema": {
-    "type": "object",
-    "properties": {
-      "name": {
-        "title": "Name",
-        "type": "string",
-        "required": true,
-        "default": "WeatherFlow Tempest Platform"
-      },
-      "token": {
-        "title": "Token",
-        "type": "string",
-        "required": true
-      },
-      "station_id": {
-        "title": "Station ID",
-        "type": "string",
-        "required": true
-      },
-      "interval": {
-        "type": "integer",
-        "default": 10,
-        "minimum": 1
-      },
-      "sensors": {
-        "title": "Weather Sensors",
-        "description": "Enable WeatherFlow Tempest Sensors.",
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
+    "pluginAlias": "WeatherFlowTempest",
+    "pluginType": "platform",
+    "singular": false,
+    "schema": {
+        "type": "object",
+        "properties": {
             "name": {
-              "type": "string"
-            },
-            "sensor_type": {
+                "title": "Name",
                 "type": "string",
-                "enum": ["Temperature Sensor", "Light Sensor", "Humidity Sensor", "Fan"]
+                "required": true,
+                "default": "WeatherFlow Tempest Platform"
             },
-            "value_key": {
-              "type": "string"
+            "token": {
+                "title": "Token",
+                "type": "string",
+                "required": true
+            },
+            "station_id": {
+                "title": "Station ID (Integer)",
+                "type": "number",
+                "required": true
+            },
+            "interval": {
+                "type": "integer",
+                "default": 10,
+                "minimum": 1
+            },
+            "sensors": {
+                "title": "Weather Sensors",
+                "description": "Enable WeatherFlow Tempest Sensors.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "sensor_type": {
+                            "type": "string",
+                            "enum": [
+                                "Temperature Sensor",
+                                "Light Sensor",
+                                "Humidity Sensor",
+                                "Fan",
+                                "Motion Sensor"
+                            ],
+                            "default": "Temperature Sensor"
+                        },
+                        "value_key": {
+                            "type": "string"
+                        },
+                        "additional_properties": {
+                            "title": "Additional Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Motion Sensor') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "motion_trigger_value": {
+                                    "type": "number",
+                                    "minimum": 1,
+                                    "description": "At what point (value) to trigger motion detected on/off."
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "name",
+                    "sensor_type",
+                    "value_key"
+                ]
             }
-            
-          }
-        },
-        "required": ["name", "sensor_type", "value_key"]
-      }
+        }
     }
-  }
 }
