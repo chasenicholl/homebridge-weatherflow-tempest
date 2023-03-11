@@ -36,6 +36,8 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     this.observation_data = {
       air_temperature: 0,
       feels_like: 0,
+      wind_chill: 0,
+      dew_point: 0,
       relative_humidity: 0,
       wind_avg: 0,
       wind_gust: 0,
@@ -63,7 +65,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
       try {
 
-        this.tempestApi.getStationCurrentObservation().then( (observation_data: Observation) => {
+        this.tempestApi.getStationCurrentObservation(0).then( (observation_data: Observation) => {
 
           if (!observation_data) {
             log.info('Failed to fetch initial Station Current Observations after retrying. Refusing to continue.');
@@ -91,7 +93,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
   }
 
-  private pollStationCurrentObservation() {
+  private pollStationCurrentObservation(): void {
 
     // Poll Tempest API
     const interval = (this.config.interval as number || 10) * 1000;
@@ -101,9 +103,13 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
       setTimeout( () => {
 
-        this.tempestApi.getStationCurrentObservation().then( (observation_data: Observation) => {
+        this.tempestApi.getStationCurrentObservation(0).then( (observation_data: Observation) => {
 
-          this.observation_data = observation_data;
+          if (observation_data === undefined) {
+            this.log.warn('observation_data is undefined, skipping interval sensor update');
+          } else {
+            this.observation_data = observation_data;
+          }
           timer = setTimeout(tick, interval);
 
         });
@@ -121,7 +127,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
    * This function is invoked when homebridge restores cached accessories from disk at startup.
    * It should be used to setup event handlers for characteristics and update respective values.
    */
-  public configureAccessory(accessory: PlatformAccessory) {
+  public configureAccessory(accessory: PlatformAccessory): void {
     this.log.info('Loading accessory from cache:', accessory.displayName);
 
     // add the restored accessory to the accessories cache so we can track if it has already been registered
@@ -153,7 +159,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
   /**
    * Discover Configured Sensors.
    */
-  private discoverDevices() {
+  private discoverDevices(): void {
 
     try {
       for (const device of this.config.sensors as Array<TempestSensor>) {
@@ -166,7 +172,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
   }
 
-  private initAccessory(device: TempestSensor) {
+  private initAccessory(device: TempestSensor): void {
 
     const uuid = this.api.hap.uuid.generate(
       `${device.name}-${device.sensor_type}-${device.value_key}`,
