@@ -4,6 +4,8 @@ import axios, { AxiosResponse } from 'axios';
 export interface Observation {
   air_temperature: number;
   feels_like: number;
+  wind_chill: number;
+  dew_point: number;
   relative_humidity: number;
   wind_avg: number;
   wind_gust: number;
@@ -24,7 +26,7 @@ export class TempestApi {
     this.log = log;
     this.token = token;
     this.station_id = station_id;
-    this.data = undefined;
+    this.data = undefined; // last sample of Observation data
 
     this.log.info('TempestApi initialized.');
 
@@ -34,24 +36,27 @@ export class TempestApi {
 
     try {
       const url = `https://swd.weatherflow.com/swd/rest/observations/station/${this.station_id}`;
-      const headers = {
-        Authorization: `Bearer ${this.token}`,
-        Accept: 'application/json',
+      const options = {
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+        },
+        validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
       };
-      return await axios.get(url, {headers: headers, responseType: 'json'});
+      return await axios.get(url, options);
     } catch(exception) {
       this.log.debug(`[WeatherFlow] ${exception}`);
+      return;
     }
 
   }
 
-  private async delay(ms: number) {
+  private async delay(ms: number): Promise<unknown> {
 
     return new Promise(resolve => setTimeout(resolve, ms));
 
   }
 
-  private isResponseGood(response: AxiosResponse) {
+  private isResponseGood(response: AxiosResponse): boolean {
 
     try {
       if (!response || !response.data) {
@@ -68,23 +73,24 @@ export class TempestApi {
 
   }
 
-  public async getStationCurrentObservation(retry_count = 0) {
+  public async getStationCurrentObservation(retry_count: number) {
 
     if (retry_count === this.max_retries) {
       this.log.error(`Reached max API retries: ${this.max_retries}. Stopping.`);
       return;
     }
 
-    const response: AxiosResponse | undefined = await this.getStationObservation();
-    if (!response || !this.isResponseGood(response as AxiosResponse)) {
+    const response = await this.getStationObservation();
+    if (!response || !this.isResponseGood(response)) {
       this.log.warn('Response missing "obs" data.');
       if (this.data !== undefined) {
         this.log.warn('Returning last cached response.');
         return this.data;
       }
       this.log.warn(`Retrying ${retry_count + 1} of ${this.max_retries}. No cached "obs" data.`);
+      retry_count += 1;
       await this.delay(1000 * retry_count);
-      return await this.getStationCurrentObservation(retry_count + 1);
+      return await this.getStationCurrentObservation(retry_count);
     } else {
       if (typeof response.data === 'string') {
         response.data = JSON.parse(response.data);

@@ -38,7 +38,6 @@ class TemperatureSensor {
   private getCurrentTemperature(): number {
 
     try {
-
       const value_key: string = this.accessory.context.device.value_key;
       const temperature: number = parseFloat(this.platform.observation_data[value_key]);
       if (temperature > 100.00) {
@@ -104,8 +103,12 @@ class LightSensor {
       if (lux < 0.0001) {
         this.platform.log.debug(`WeatherFlow Tempest is reporting lux less than 0.0001: ${lux}`);
         return 0.0001;
+      } else if (lux > 100000) {
+        this.platform.log.debug(`WeatherFlow Tempest is reporting lux greater than 100000: ${lux}`);
+        return 100000;
+      } else {
+        return lux;
       }
-      return lux;
     } catch(exception) {
       this.platform.log.error(exception as string);
       return 0.0001;
