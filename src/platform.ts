@@ -22,6 +22,9 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
   private tempestApi: TempestApi;
 
   public observation_data: Observation; // Observation data for Accessories to use.
+  public tempest_battery_level!: number; // Tempest battery level
+
+  private activeAccessory: PlatformAccessory[] = []; // array of active Tempest sensors
 
   constructor(
     public readonly log: Logger,
@@ -35,15 +38,21 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     this.tempestApi = new TempestApi(this.config.token, this.config.station_id, log);
     this.observation_data = {
       air_temperature: 0,
+      barometric_pressure: 0,
+      relative_humidity: 0,
+      precip: 0,
+      precip_accum_local_day: 0,
+      wind_avg: 0,
+      wind_direction: 0,
+      wind_gust: 0,
+      solar_radiation: 0,
+      uv: 0,
+      brightness: 0,
       feels_like: 0,
       wind_chill: 0,
       dew_point: 0,
-      relative_humidity: 0,
-      wind_avg: 0,
-      wind_gust: 0,
-      wind_direction: 0,
-      brightness: 0,
     };
+    this.tempest_battery_level = 0;
 
     // Make sure the Station ID is the integer ID
     if (isNaN(this.config.station_id)) {
@@ -78,6 +87,23 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
           // Initialize sensors after first API response.
           this.discoverDevices();
 
+          this.log.debug ('discoverDevices completed');
+
+          // Remove cached sensors that are no longer required.
+          this.removeDevices();
+
+          // Initialize battery level
+          this.tempestApi.getTempestBatteryLevel().then( (battery_level: number) => {
+
+            if (!battery_level) {
+              log.info('Failed to fetch initial Tempest battery level');
+              return;
+            }
+
+            this.tempest_battery_level = battery_level;
+
+          });
+
           // Then begin to poll the station current observations data.
           this.pollStationCurrentObservation();
 
@@ -103,16 +129,29 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
       setTimeout( () => {
 
+        // Update Observation data
         this.tempestApi.getStationCurrentObservation(0).then( (observation_data: Observation) => {
 
           if (observation_data === undefined) {
-            this.log.warn('observation_data is undefined, skipping interval sensor update');
+            this.log.warn('observation_data is undefined, skipping update');
           } else {
             this.observation_data = observation_data;
           }
-          timer = setTimeout(tick, interval);
 
         });
+
+        // Update Battery percentage
+        this.tempestApi.getTempestBatteryLevel().then( (battery_level: number) => {
+
+          if (battery_level === undefined) {
+            this.log.warn('battery_level is undefined, skipping update');
+          } else {
+            this.tempest_battery_level = battery_level;
+          }
+
+        });
+
+        timer = setTimeout(tick, interval);
 
       }, interval);
 
@@ -181,14 +220,29 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     if (existingAccessory) {
       this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
       new WeatherFlowTempestPlatformAccessory(this, existingAccessory);
+      this.activeAccessory.push(existingAccessory); // add to array of active accessories
     } else {
       this.log.info('Adding new accessory:', device.name);
       const accessory = new this.api.platformAccessory(device.name, uuid);
       accessory.context.device = device;
       new WeatherFlowTempestPlatformAccessory(this, accessory);
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      this.activeAccessory.push(accessory); // add to array of active accessories
     }
+  }
 
+  /**
+   * Remove Tempest inactive sensors that are no longer used.
+   */
+  private removeDevices(): void {
+    this.accessories.forEach((accessory): void => {
+      if (!this.activeAccessory.includes(accessory)){
+        this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+        this.accessories.splice(this.accessories.indexOf(accessory), 1); // remove unused accessory from accessories array
+        this.log.info(`Unused accessory: ${accessory.context.device.name} removed.`);
+      }
+    });
+    return;
   }
 
 }

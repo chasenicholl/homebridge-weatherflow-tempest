@@ -2,15 +2,24 @@ import { Logger } from 'homebridge';
 import axios, { AxiosResponse } from 'axios';
 
 export interface Observation {
-  air_temperature: number;
+  air_temperature: number;     // temperature sensors
   feels_like: number;
   wind_chill: number;
   dew_point: number;
-  relative_humidity: number;
-  wind_avg: number;
-  wind_gust: number;
+
+  relative_humidity: number;   // humidity sensor
+
+  wind_avg: number;            // fan
+  wind_gust: number;           // motion sensor
+
+  barometric_pressure: number; // occupancy sensors
+  precip: number;
+  precip_accum_local_day: number;
   wind_direction: number;
-  brightness: number;
+  solar_radiation: number;
+  uv: number;
+
+  brightness: number;          // light sensor
 }
 
 export class TempestApi {
@@ -19,6 +28,8 @@ export class TempestApi {
   private token: string;
   private station_id: string;
   private data: object | undefined;
+  private tempest_device_id: number;
+  private tempest_battery_level: number;
   private readonly max_retries: number = 30;
 
   constructor(token: string, station_id: string, log: Logger) {
@@ -27,6 +38,8 @@ export class TempestApi {
     this.token = token;
     this.station_id = station_id;
     this.data = undefined; // last sample of Observation data
+    this.tempest_device_id = 0;
+    this.tempest_battery_level = 0;
 
     this.log.info('TempestApi initialized.');
 
@@ -98,6 +111,54 @@ export class TempestApi {
       this.data = response.data['obs'][0];
       return this.data;
     }
+
+  }
+
+  public async getTempestBatteryLevel(): Promise<number> {
+
+    const device_id = await this.getTempestDeviceID();
+
+    const url = `https://swd.weatherflow.com/swd/rest/observations/device/${device_id}`;
+    const options = {
+      headers: {
+        'Authorization': `Bearer ${this.token}`,
+      },
+      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
+    };
+
+    await axios.get(url, options) // assumes single Tempest station
+      .then(response => {
+        const tempest_battery_voltage = response.data.obs[0][16];
+        this.tempest_battery_level = Math.round((tempest_battery_voltage - 1.8) * 100); // 2.80V = 100%, 1.80V = 0%
+      })
+
+      .catch(exception => {
+        this.log.debug(`[WeatherFlow] ${exception}`);
+      });
+
+    return this.tempest_battery_level;
+
+  }
+
+  private async getTempestDeviceID(): Promise<number> {
+
+    const url = `https://swd.weatherflow.com/swd/rest/stations/${this.station_id}`;
+    const options = {
+      headers: {
+        'Authorization': `Bearer ${this.token}`,
+      },
+      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
+    };
+
+    await axios.get(url, options) // assumes single hub with single Tempest station
+      .then(response => {
+        this.tempest_device_id = response.data.stations[0].devices[1].device_id;
+      })
+
+      .catch(exception => {
+        this.log.debug(`[WeatherFlow] ${exception}`);
+      });
+    return this.tempest_device_id;
 
   }
 

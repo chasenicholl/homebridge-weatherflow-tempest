@@ -205,7 +205,9 @@ class MotionSensor {
       .onGet(this.handleMotionDetectedGet.bind(this));
 
     // Set initial value
-    this.service.getCharacteristic(this.platform.Characteristic.MotionDetected).updateValue(this.isMotionDetected());
+    this.service.getCharacteristic(
+      this.platform.Characteristic.MotionDetected).updateValue(this.isMotionDetected(),
+    );
 
     // Update value based on user defined global interval
     const interval = (this.platform.config.interval as number || 10) * 1000;
@@ -215,7 +217,7 @@ class MotionSensor {
 
   }
 
-  private getValue(): number {
+  private getMotionSensorValue(): number {
 
     try {
       const value_key: string = this.accessory.context.device.value_key;
@@ -235,10 +237,10 @@ class MotionSensor {
 
   private isMotionDetected(): boolean {
 
-    const current_value = this.getValue();
+    const current_value = this.getMotionSensorValue();
     let motion_trigger_value = 1;
     try {
-      motion_trigger_value = this.accessory.context.device.additional_properties.motion_trigger_value;
+      motion_trigger_value = this.accessory.context.device.motion_properties.motion_trigger_value;
     } catch(exception) {
       this.platform.log.error(exception as string);
       this.platform.log.warn('Defaulting to 1 as motion trigger value.');
@@ -321,6 +323,268 @@ class Fan {
 
 }
 
+class OccupancySensor {
+  private service: Service;
+
+  constructor(
+    private readonly platform: WeatherFlowTempestPlatform,
+    private readonly accessory: PlatformAccessory,
+  ) {
+
+    // Restore or create Occupancy Sensor
+    this.service = this.accessory.getService(this.platform.Service.OccupancySensor) ||
+    this.accessory.addService(this.platform.Service.OccupancySensor);
+
+    // Create handlers for required characteristics
+    this.service.getCharacteristic(this.platform.Characteristic.OccupancyDetected)
+      .onGet(this.handleOccupancyDetectedGet.bind(this));
+
+    // Set initial state of Occupancy Sensor and sensor value
+    const sensorName = this.accessory.context.device.name;
+    const [sensorValue, sensorUnits, sensorTrip] = this.getOccupancySensorValue();
+
+    this.service.getCharacteristic(
+      this.platform.Characteristic.OccupancyDetected).updateValue((sensorValue >= sensorTrip),
+    );
+
+    this.service.getCharacteristic(
+      this.platform.Characteristic.Name).updateValue(`${sensorName}: ${sensorValue} ${sensorUnits}`,
+    );
+
+    // Update occupancy sensor state and name based on user defined global interval
+    const interval = (this.platform.config.interval as number || 10) * 1000;
+
+    setInterval( () => {
+      const sensorName = this.accessory.context.device.name;
+      const [sensorValue, sensorUnits, sensorTrip] = this.getOccupancySensorValue();
+
+      this.service.getCharacteristic(
+        this.platform.Characteristic.Name).updateValue(`${sensorName}: ${sensorValue} ${sensorUnits}`,
+      );
+
+      this.service.getCharacteristic(
+        this.platform.Characteristic.OccupancyDetected).updateValue((sensorValue >= sensorTrip),
+      );
+
+    }, interval);
+
+  }
+
+  private getOccupancySensorValue(): [number, string, number] {
+
+    try {
+      const value_key: string = this.accessory.context.device.value_key;
+      let value: number = parseFloat(this.platform.observation_data[value_key]);
+      let units = '';
+      let trip_level = this.accessory.context.device.occupancy_properties.occupancy_trigger_value;
+      // check that trip_level is not less than 0
+      if (trip_level < 0) {
+        trip_level = 0;
+      }
+      switch (value_key) {
+        case 'barometric_pressure': // convert from mbar to inHg
+          value = Math.round(value / 33.8638 * 1000) / 1000; // 3 decimal places
+          units = 'inHg';
+          break;
+        case 'precip': // rate per hour
+          value = Math.round(value * 100) / 100; // inch, 2 decimal places
+          // value = Math.round(value / 25.4 * 100) / 100; // mm to inch, 2 decimal places
+          units = 'in/hr';
+          break;
+        case 'precip_accum_local_day':
+          value = Math.round(value / 25.4 * 100) / 100; // mm to inch, 2 decimal places
+          units = 'in';
+          break;
+        case 'solar_radiation':
+          units = 'W/m\xB2';
+          break;
+        case 'uv':
+          units = 'UV index';
+          break;
+        case 'wind_direction': // convert value to N, S, E, W as units
+          // eslint-disable-next-line no-case-declarations
+          const cat = Math.round(value % 360 / 22.5);
+          switch (cat) {
+            case 0:
+              units = '\xB0 N';
+              break;
+            case 1:
+              units = '\xB0 NNE';
+              break;
+            case 2:
+              units = '\xB0 NE';
+              break;
+            case 3:
+              units = '\xB0 ENE';
+              break;
+            case 4:
+              units = '\xB0 E';
+              break;
+            case 5:
+              units = '\xB0 ESE';
+              break;
+            case 6:
+              units = '\xB0 SE';
+              break;
+            case 7:
+              units = '\xB0 SSE';
+              break;
+            case 8:
+              units = '\xB0 S';
+              break;
+            case 9:
+              units = '\xB0 SSW';
+              break;
+            case 10:
+              units = '\xB0 SW';
+              break;
+            case 11:
+              units = '\xB0 WSW';
+              break;
+            case 12:
+              units = '\xB0 W';
+              break;
+            case 13:
+              units = '\xB0 WNW';
+              break;
+            case 14:
+              units = '\xB0 NW';
+              break;
+            case 15:
+              units = '\xB0 NNW';
+              break;
+            case 16:
+              units = '\xB0 N';
+              break;
+            default:
+              units = ' Variable';
+          }
+          break;
+        default:
+          break;
+      }
+      if (value < 0) {
+        this.platform.log.debug(`WeatherFlow Tempest ${value_key} is reporting less than 0: ${value}`);
+        return [0, units, trip_level];
+      } else {
+        this.platform.log.debug(`WeatherFlow Tempest ${value_key}: ${value} ${units}, trip_level: ${trip_level}`);
+        return [value, units, trip_level];
+      }
+    } catch(exception) {
+      this.platform.log.error(exception as string);
+      return [0, '', 1000];
+    }
+
+  }
+
+  private isOccupancyDetected(): boolean {
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [sensorValue, sensorUnits, sensorTrip] = this.getOccupancySensorValue();
+    return sensorValue >= sensorTrip;
+
+  }
+
+  /**
+   * Handle requests to get the current value of the "Motion Detected" characteristic
+   */
+  private handleOccupancyDetectedGet(): boolean {
+
+    this.platform.log.debug('Triggered GET MotionDetected');
+    return this.isOccupancyDetected();
+
+  }
+
+}
+
+class BatterySensor {
+  private service: Service;
+
+  constructor(
+    private readonly platform: WeatherFlowTempestPlatform,
+    private readonly accessory: PlatformAccessory,
+  ) {
+
+    // Get or Add Service to Accessory
+    this.service = this.accessory.getService(this.platform.Service.Battery) ||
+    this.accessory.addService(this.platform.Service.Battery, 'Tempest Battery');
+
+    // Create handlers for required characteristics
+    this.service.getCharacteristic(this.platform.Characteristic.BatteryLevel)
+      .onGet(this.handleCurrentBatteryLevelGet.bind(this));
+
+    // Set Current Battery Level
+    this.service.getCharacteristic(
+      this.platform.Characteristic.BatteryLevel).updateValue(this.getCurrentBatteryLevel(),
+    );
+
+    // Update value based on user defined global interval
+    const interval = (this.platform.config.interval as number || 10) * 1000;
+    setInterval( () => {
+      this.service.getCharacteristic(
+        this.platform.Characteristic.BatteryLevel).updateValue(this.getCurrentBatteryLevel(),
+      );
+    }, interval);
+
+  }
+
+  /**
+   * Get the current battery level from the global observation object.
+   */
+  private getCurrentBatteryLevel(): number {
+
+    try {
+      const batteryLevel: number = this.platform.tempest_battery_level;
+      if (batteryLevel > 100) {
+        this.platform.log.debug(`WeatherFlow Tempest is reporting battery level exceeding 100%: ${batteryLevel}%`);
+        return 100;
+      } else if (batteryLevel < 0) {
+        this.platform.log.debug(`WeatherFlow Tempest is reporting battery level less than 0%: ${batteryLevel}%`);
+        return 0;
+      } else {
+        return batteryLevel;
+      }
+    } catch(exception) {
+      this.platform.log.error(exception as string);
+      return 0;
+    }
+
+  }
+
+  /**
+   * Handle requests to get the current value of the "Current Battery Level" characteristic
+   */
+  private handleCurrentBatteryLevelGet(): number {
+
+    this.platform.log.debug('Triggered GET CurrentBatteryLevel');
+    const batteryLevel: number = this.getCurrentBatteryLevel();
+    return batteryLevel;
+  }
+
+}
+
+/**
+ * Initialize Tempest Platform (only need to do once)
+ */
+export class InitWeatherFlowTempestPlatform {
+
+  constructor(
+    private readonly platform: WeatherFlowTempestPlatform,
+    private readonly accessory: PlatformAccessory,
+  ) {
+
+    // Configure Accessory
+    this.accessory.getService(this.platform.Service.AccessoryInformation)!
+      .setCharacteristic(this.platform.Characteristic.Manufacturer, 'WeatherFlow')
+      .setCharacteristic(this.platform.Characteristic.Model, 'Tempest')
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, `${this.platform.config.station_id}`);
+
+    // Add battery sensor
+    new BatterySensor(this.platform, this.accessory);
+
+  }
+}
+
 /**
  * Platform Accessory
  */
@@ -335,12 +599,17 @@ export class WeatherFlowTempestPlatformAccessory {
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'WeatherFlow')
       .setCharacteristic(this.platform.Characteristic.Model, `Tempest - ${this.accessory.context.device.name}`)
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, '000');
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, `${this.platform.config.station_id}`);
 
-    // ["Temperature Sensor", "Light Sensor", "Humidity Sensor", "Fan", "Motion Sensor"]
+    // ["Temperature Sensor", "Light Sensor", "Humidity Sensor", "Fan", "Motion Sensor", "Occupancy Sensor"]
     switch (this.accessory.context.device.sensor_type) {
       case 'Temperature Sensor':
         new TemperatureSensor(this.platform, this.accessory);
+
+        // Add Battery to default Temperature air_temperature sensor
+        if (this.accessory.context.device.value_key === 'air_temperature') {
+          new BatterySensor(this.platform, this.accessory);
+        }
         break;
       case 'Light Sensor':
         new LightSensor(this.platform, this.accessory);
@@ -353,6 +622,9 @@ export class WeatherFlowTempestPlatformAccessory {
         break;
       case 'Fan':
         new Fan(this.platform, this.accessory);
+        break;
+      case 'Occupancy Sensor':
+        new OccupancySensor(this.platform, this.accessory);
         break;
     }
 

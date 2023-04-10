@@ -43,15 +43,33 @@
                                 "Light Sensor",
                                 "Humidity Sensor",
                                 "Fan",
-                                "Motion Sensor"
+                                "Motion Sensor",
+                                "Occupancy Sensor"
                             ],
                             "default": "Temperature Sensor"
                         },
                         "value_key": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "air_temperature",
+                                "barometric_pressure",
+                                "relative_humidity",
+                                "precip",
+                                "precip_accum_local_day",
+                                "wind_avg",
+                                "wind_direction",
+                                "wind_gust",
+                                "solar_radiation",
+                                "uv",
+                                "brightness",
+                                "feels_like",
+                                "wind_chill",
+                                "dew_point"
+                            ],
+                            "default": "air_temperature"
                         },
-                        "additional_properties": {
-                            "title": "Additional Properties",
+                        "motion_properties": {
+                            "title": "Motion Properties",
                             "type": "object",
                             "condition": {
                               "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Motion Sensor') { return true; } else { return false; };"
@@ -60,7 +78,21 @@
                                 "motion_trigger_value": {
                                     "type": "number",
                                     "minimum": 1,
-                                    "description": "At what point (value) to trigger motion detected on/off."
+                                    "description": "At what point (value) to trigger motion detected on/off (1 minimum)."
+                                }
+                            }
+                        },
+                        "occupancy_properties": {
+                            "title": "Occupancy Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Occupancy Sensor') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "occupancy_trigger_value": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "description": "At what point (value) to trigger occupancy detected on/off (0 minimum)."
                                 }
                             }
                         }

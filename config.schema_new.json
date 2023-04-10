@@ -1,0 +1,171 @@
+{
+    "pluginAlias": "WeatherFlowTempest",
+    "pluginType": "platform",
+    "singular": false,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "title": "Name",
+                "type": "string",
+                "required": true,
+                "default": "WeatherFlow Tempest Platform"
+            },
+            "token": {
+                "title": "Token",
+                "type": "string",
+                "required": true
+            },
+            "station_id": {
+                "title": "Station ID (Integer)",
+                "type": "number",
+                "required": true
+            },
+            "interval": {
+                "type": "integer",
+                "default": 10,
+                "minimum": 1
+            },
+            "sensors": {
+                "title": "Weather Sensors",
+                "description": "Enable WeatherFlow Tempest Sensors.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "sensor_type": {
+                            "type": "string",
+                            "enum": [
+                                "Temperature Sensor",
+                                "Light Sensor",
+                                "Humidity Sensor",
+                                "Fan",
+                                "Motion Sensor",
+                                "Occupancy Sensor"
+                            ],
+                            "default": "Temperature Sensor"
+                        },
+
+                        "Fan": {
+                            "title": "Fan Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Fan') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "value_key": {
+                                    "type": "string",
+                                    "enum": [
+                                        "wind_avg"
+                                    ]
+                                }
+                            }
+                        },
+                        "Light Sensor": {
+                            "title": "Light Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Light Sensor') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "value_key": {
+                                    "type": "string",
+                                    "enum": [
+                                        "brightness"
+                                    ]
+                                }
+                            }
+                        },
+                        "Humidity Sensor": {
+                            "title": "Humidity Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Humidity Sensor') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "value_key": {
+                                    "type": "string",
+                                    "enum": [
+                                        "relative_humidity"
+                                    ]
+                                }
+                            }
+                        },
+                        "Temperature Sensor": {
+                            "title": "Temperature Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Temperature Sensor') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "value_key": {
+                                    "type": "string",
+                                    "enum": [
+                                        "air_temperature",
+                                        "dew_point",
+                                        "feels_like",
+                                        "wind_chill"
+                                    ]
+                                }
+                            }
+                        },
+                        "Motion Sensor": {
+                            "title": "Motion Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Motion Sensor') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "value_key": {
+                                    "type": "string",
+                                    "enum": [
+                                        "wind_gust"
+                                    ]
+                                },
+                                "motion_trigger_value": {
+                                    "type": "number",
+                                    "minimum": 1,
+                                    "description": "At what point (value) to trigger motion detected on/off (1 minimum)."
+                                }
+                            }
+                        },
+                        "Occupancy Sensor": {
+                            "title": "Occupancy Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Occupancy Sensor') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "value_key": {
+                                    "type": "string",
+                                    "enum": [
+                                        "barometric_pressure",
+                                        "precip",
+                                        "precip_accum_local_day",
+                                        "wind_direction",
+                                        "wind_gust",
+                                        "solar_radiation",
+                                        "uv"
+                                    ]
+                                },
+                                "occupancy_trigger_value": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "description": "At what point (value) to trigger occupancy detected on/off (0 minimum)."
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "name",
+                    "sensor_type",
+                    "value_key"
+                ]
+            }
+        }
+    }
+}
