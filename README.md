@@ -58,34 +58,104 @@ sensor_type | value_key | units | additional_properties | Typical | Notes
   "station_id": 10000,
   "interval": 10,
   "sensors": [
-    {
-      "name": "Outside Temperature",
-      "sensor_type": "Temperature Sensor",
-      "value_key": "air_temperature"
-    },
-    {
-      "name": "Outside Relative Humidity",
-      "sensor_type": "Humidity Sensor",
-      "value_key": "relative_humidity"
-    },
-    {
-      "name": "Outside Light Level",
-      "sensor_type": "Light Sensor",
-      "value_key": "brightness"
-    },
-    {
-      "name": "Outside Wind Speed",
-      "sensor_type": "Fan",
-      "value_key": "wind_avg"
-    },
-    {
-      "name": "Wind Speed Detector",
-      "sensor_type": "Motion Sensor",
-      "value_key": "wind_gust",
-      "additional_properties": {
-        "motion_trigger_value": 30
+      {
+          "name": "Temperature",
+          "sensor_type": "Temperature Sensor",
+          "temperature_properties": {
+              "value_key": "air_temperature"
+          }
+      },
+      {
+          "name": "Feels Like",
+          "sensor_type": "Temperature Sensor",
+          "temperature_properties": {
+              "value_key": "feels_like"
+          }
+      },
+      {
+          "name": "Dew Point",
+          "sensor_type": "Temperature Sensor",
+          "temperature_properties": {
+              "value_key": "dew_point"
+          }
+      },
+      {
+          "name": "Relative Humidity",
+          "sensor_type": "Humidity Sensor",
+          "humidity_properties": {
+              "value_key": "relative_humidity"
+          }
+      },
+      {
+          "name": "Light Level",
+          "sensor_type": "Light Sensor",
+          "light_properties": {
+              "value_key": "brightness"
+          }
+      },
+      {
+          "name": "Wind Speed",
+          "sensor_type": "Fan",
+          "fan_properties": {
+              "value_key": "wind_avg"
+          }
+      },
+      {
+          "name": "Wind Gust",
+          "sensor_type": "Motion Sensor",
+          "motion_properties": {
+              "value_key": "wind_gust",
+              "motion_trigger_value": 10
+          }
+      },
+      {
+          "name": "Barometer",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "value_key": "barometric_pressure",
+              "occupancy_trigger_value": 30
+          }
+      },
+      {
+          "name": "Solar Radiation",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "value_key": "solar_radiation",
+              "occupancy_trigger_value": 1000
+          }
+      },
+      {
+          "name": "UV",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "value_key": "uv",
+              "occupancy_trigger_value": 3
+          }
+      },
+      {
+          "name": "Precipitation Rate",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "value_key": "precip",
+              "occupancy_trigger_value": 0.25
+          }
+      },
+      {
+          "name": "Precipitation Today",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "value_key": "precip_accum_local_day",
+              "occupancy_trigger_value": 1
+          }
+      },
+      {
+          "name": "Wind Direction",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "value_key": "wind_direction",
+              "occupancy_trigger_value": 360
+          }
       }
-    },
   ],
   "platform": "WeatherFlowTempest"
 }
