@@ -48,25 +48,69 @@
                             ],
                             "default": "Temperature Sensor"
                         },
-                        "value_key": {
-                            "type": "string",
-                            "enum": [
-                                "air_temperature",
-                                "barometric_pressure",
-                                "relative_humidity",
-                                "precip",
-                                "precip_accum_local_day",
-                                "wind_avg",
-                                "wind_direction",
-                                "wind_gust",
-                                "solar_radiation",
-                                "uv",
-                                "brightness",
-                                "feels_like",
-                                "wind_chill",
-                                "dew_point"
-                            ],
-                            "default": "air_temperature"
+
+                        "fan_properties": {
+                            "title": "Fan Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Fan') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "value_key": {
+                                    "type": "string",
+                                    "enum": [
+                                        "wind_avg"
+                                    ]
+                                }
+                            }
+                        },
+                        "light_properties": {
+                            "title": "Light Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Light Sensor') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "value_key": {
+                                    "type": "string",
+                                    "enum": [
+                                        "brightness"
+                                    ]
+                                }
+                            }
+                        },
+                        "humidity_properties": {
+                            "title": "Humidity Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Humidity Sensor') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "value_key": {
+                                    "type": "string",
+                                    "enum": [
+                                        "relative_humidity"
+                                    ]
+                                }
+                            }
+                        },
+                        "temperature_properties": {
+                            "title": "Temperature Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Temperature Sensor') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "value_key": {
+                                    "type": "string",
+                                    "enum": [
+                                        "air_temperature",
+                                        "dew_point",
+                                        "feels_like",
+                                        "wind_chill"
+                                    ]
+                                }
+                            }
                         },
                         "motion_properties": {
                             "title": "Motion Properties",
@@ -75,6 +119,12 @@
                               "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Motion Sensor') { return true; } else { return false; };"
                             },
                             "properties": {
+                                "value_key": {
+                                    "type": "string",
+                                    "enum": [
+                                        "wind_gust"
+                                    ]
+                                },
                                 "motion_trigger_value": {
                                     "type": "number",
                                     "minimum": 1,
@@ -89,6 +139,18 @@
                               "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Occupancy Sensor') { return true; } else { return false; };"
                             },
                             "properties": {
+                                "value_key": {
+                                    "type": "string",
+                                    "enum": [
+                                        "barometric_pressure",
+                                        "precip",
+                                        "precip_accum_local_day",
+                                        "wind_direction",
+                                        "wind_gust",
+                                        "solar_radiation",
+                                        "uv"
+                                    ]
+                                },
                                 "occupancy_trigger_value": {
                                     "type": "number",
                                     "minimum": 0,

@@ -38,7 +38,7 @@ class TemperatureSensor {
   private getCurrentTemperature(): number {
 
     try {
-      const value_key: string = this.accessory.context.device.value_key;
+      const value_key: string = this.accessory.context.device.temperature_properties.value_key;
       const temperature: number = parseFloat(this.platform.observation_data[value_key]);
       if (temperature > 100.00) {
         this.platform.log.debug(`WeatherFlow Tempest is reporting temperatures exceeding 100c: ${temperature}c`);
@@ -98,7 +98,7 @@ class LightSensor {
   private getCurrentLux(): number {
 
     try {
-      const value_key: string = this.accessory.context.device.value_key;
+      const value_key: string = this.accessory.context.device.light_properties.value_key;
       const lux: number = parseFloat(this.platform.observation_data[value_key]);
       if (lux < 0.0001) {
         this.platform.log.debug(`WeatherFlow Tempest is reporting lux less than 0.0001: ${lux}`);
@@ -158,7 +158,7 @@ class HumiditySensor {
   private getCurrentRelativeHumidity(): number {
 
     try {
-      const value_key: string = this.accessory.context.device.value_key;
+      const value_key: string = this.accessory.context.device.humidity_properties.value_key;
       const relative_humidity: number = parseInt(this.platform.observation_data[value_key]);
       if (relative_humidity > 100) {
         this.platform.log.debug(`WeatherFlow Tempest is reporting relative humidity exceeding 100%: ${relative_humidity}%`);
@@ -220,7 +220,7 @@ class MotionSensor {
   private getMotionSensorValue(): number {
 
     try {
-      const value_key: string = this.accessory.context.device.value_key;
+      const value_key: string = this.accessory.context.device.motion_properties.value_key;
       const speed: number = parseInt(this.platform.observation_data[value_key]);
       if (speed < 0) {
         this.platform.log.debug(`WeatherFlow Tempest Motion Sensor is reporting less than 0: ${speed}`);
@@ -293,7 +293,7 @@ class Fan {
   private getCurrentWindSpeed(): number {
 
     try {
-      const value_key: string = this.accessory.context.device.value_key;
+      const value_key: string = this.accessory.context.device.fan_properties.value_key;
       const speed: number = parseInt(this.platform.observation_data[value_key]);
       if (speed > 100) {
         this.platform.log.debug(`WeatherFlow Tempest is reporting wind speed exceeding 100mph: ${speed}mph`);
@@ -373,7 +373,7 @@ class OccupancySensor {
   private getOccupancySensorValue(): [number, string, number] {
 
     try {
-      const value_key: string = this.accessory.context.device.value_key;
+      const value_key: string = this.accessory.context.device.occupancy_properties.value_key;
       let value: number = parseFloat(this.platform.observation_data[value_key]);
       let units = '';
       let trip_level = this.accessory.context.device.occupancy_properties.occupancy_trigger_value;
@@ -607,7 +607,7 @@ export class WeatherFlowTempestPlatformAccessory {
         new TemperatureSensor(this.platform, this.accessory);
 
         // Add Battery to default Temperature air_temperature sensor
-        if (this.accessory.context.device.value_key === 'air_temperature') {
+        if (this.accessory.context.device.temperature_properties.value_key === 'air_temperature') {
           new BatterySensor(this.platform, this.accessory);
         }
         break;

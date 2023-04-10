@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.1.1
+* Update `config.schema.json` sensors to limit `value_key` dropdown options that are associated with the `sensor_type`.
+* Update `platformAccessory.ts` to use `sensor_properties.value_key` for each sensor type.
+
 ## v2.1.0
 * Add `barometric_pressure`, `precip`, `precip_accum_local_day`, `solar radiation` and `uv` as `occupancy sensors` which display the numerical value of the characteristic as part of the occupancy sensor name. Trip levels can be set for each occupancy sensor.
 * Change PlatformAccessory SerialNumber from `000` to `station_id`.

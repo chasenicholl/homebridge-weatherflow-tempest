@@ -1,0 +1,109 @@
+{
+    "pluginAlias": "WeatherFlowTempest",
+    "pluginType": "platform",
+    "singular": false,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "title": "Name",
+                "type": "string",
+                "required": true,
+                "default": "WeatherFlow Tempest Platform"
+            },
+            "token": {
+                "title": "Token",
+                "type": "string",
+                "required": true
+            },
+            "station_id": {
+                "title": "Station ID (Integer)",
+                "type": "number",
+                "required": true
+            },
+            "interval": {
+                "type": "integer",
+                "default": 10,
+                "minimum": 1
+            },
+            "sensors": {
+                "title": "Weather Sensors",
+                "description": "Enable WeatherFlow Tempest Sensors.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "sensor_type": {
+                            "type": "string",
+                            "enum": [
+                                "Temperature Sensor",
+                                "Light Sensor",
+                                "Humidity Sensor",
+                                "Fan",
+                                "Motion Sensor",
+                                "Occupancy Sensor"
+                            ],
+                            "default": "Temperature Sensor"
+                        },
+                        "value_key": {
+                            "type": "string",
+                            "enum": [
+                                "air_temperature",
+                                "barometric_pressure",
+                                "relative_humidity",
+                                "precip",
+                                "precip_accum_local_day",
+                                "wind_avg",
+                                "wind_direction",
+                                "wind_gust",
+                                "solar_radiation",
+                                "uv",
+                                "brightness",
+                                "feels_like",
+                                "wind_chill",
+                                "dew_point"
+                            ],
+                            "default": "air_temperature"
+                        },
+                        "motion_properties": {
+                            "title": "Motion Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Motion Sensor') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "motion_trigger_value": {
+                                    "type": "number",
+                                    "minimum": 1,
+                                    "description": "At what point (value) to trigger motion detected on/off (1 minimum)."
+                                }
+                            }
+                        },
+                        "occupancy_properties": {
+                            "title": "Occupancy Properties",
+                            "type": "object",
+                            "condition": {
+                              "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Occupancy Sensor') { return true; } else { return false; };"
+                            },
+                            "properties": {
+                                "occupancy_trigger_value": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "description": "At what point (value) to trigger occupancy detected on/off (0 minimum)."
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "name",
+                    "sensor_type",
+                    "value_key"
+                ]
+            }
+        }
+    }
+}
