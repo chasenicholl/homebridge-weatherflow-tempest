@@ -13,7 +13,7 @@ Homebridge Plugin providing basic WeatherFlow Tempest support. Exposing 6 Acesso
 - Humidity Sensor
 - Light Sensor
 - Motion Sensor (triggered by user configured value)
-- Occupancy Sensor (triggered by preset value)
+- Occupancy Sensor (triggered by user configured value)
 - Fan (expressed as Rotation Speed - Wind Speed 0-100mph)
 - Battery Sensor (added to `air_temperature` Temperature sensor)
 
@@ -28,9 +28,11 @@ You will need to create an account at https://tempestwx.com/ and then generate a
 - `sensors`: _(Required)_ An array of sensors to create. This is dynamic incase you want to target different temperature or wind speed attributes.
 - `sensors[].name`: _(Required)_ Display name of Sensor in Apple Home.
 - `sensors[].sensor_type`: _(Required)_ The type of Home Sensor to create. There are 6 options ["Temperature Sensor", "Light Sensor", "Humidity Sensor", "Fan", "Motion Sensor", "Occupancy Sensor"].
-- `sensors[].value_key`: _(Required)_ Which REST API response body key to target for its value. If you'd like to use different temperature or wind speeds. You can find the available value_keys in the table below, reference: https://weatherflow.github.io/Tempest/api/swagger/#!/observations/getStationObservation.
-- `sensors[].additional_properties.motion_trigger_value`: _(Required with Motion Sensor)_ At what point (value) to trigger motion detected on/off. Minimum 1.
-- `sensors[].additional_properties.occupancy_trigger_value`: _(Required with Occupancy Sensor)_ At what point (value) to trigger occupancy detected on/off. Minimum 0.
+- `sensors[].{*}_properties.value_key`: _(Required)_ Which REST API response body key to target for its value. You can find the available value_keys in the table below.
+- `sensors[].motion_properties.motion_trigger_value`: _(Required with Motion Sensor)_ At what point (value) to trigger motion detected on/off. Minimum 1.
+- `sensors[].occupancy_properties.occupancy_trigger_value`: _(Required with Occupancy Sensor)_ At what point (value) to trigger occupancy detected on/off. Minimum 0.
+
+`{*}`  Will depend on Sensor: temperature, humidity, light, fan
 
 sensor_type | value_key | units | additional_properties | Typical | Notes
 :-- | :--- | :--- | :--- | :--- | :---
@@ -44,12 +46,14 @@ sensor_type | value_key | units | additional_properties | Typical | Notes
 `Motion Sensor` | wind_gust | mi/hr | occupancy_trigger_value | 30 |
 `Occupancy Sensor` | barometric_pressure | inHg | occupancy_trigger_value | 30 |
 ` ` | precip | in/hr | occupancy_trigger_value | 0.25 |
-` ` | precip_accum_local_day | inch | occupancy_trigger_value | 1 |
+` ` | precip_accum_local_day | in | occupancy_trigger_value | 1 |
 ` ` | solar_radiation | W/m^2 | occupancy_trigger_value | 1000 |
 ` ` | uv | UV Index | occupancy_trigger_value | 3 |
 ` ` | wind_direction |   | occupancy_trigger_value | 360 |
 
-#### Config Example
+Reference: https://weatherflow.github.io/Tempest/api/swagger/#!/observations/getStationObservation.
+
+### Config Example
 
 ```json
 {
