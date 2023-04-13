@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.2.2
+* Correct units for `UV Index` and round `value` to 1 decimal place.
+* Update `README.md`.
+
 ## v2.1.1
 * Update `config.schema.json` sensors to limit `value_key` dropdown options that are associated with the `sensor_type`.
 * Update `platformAccessory.ts` to use `sensor_properties.value_key` for each sensor type.

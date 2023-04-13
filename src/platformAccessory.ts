@@ -399,7 +399,8 @@ class OccupancySensor {
           units = 'W/m\xB2';
           break;
         case 'uv':
-          units = 'UV index';
+          value = Math.round(value * 10) / 10; // 1 decimal place
+          units = ' ';
           break;
         case 'wind_direction': // convert value to N, S, E, W as units
           // eslint-disable-next-line no-case-declarations

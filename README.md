@@ -43,7 +43,7 @@ sensor_type | value_key | units | additional_properties | Typical | Notes
 `Humidity Sensor` | relative_humidity | % | NA | NA |
 `Light Sensor` | brightness | lux | NA | NA |
 `Fan` | wind_avg | mi/hr | NA | NA | wind_avg speed reported as Fan %
-`Motion Sensor` | wind_gust | mi/hr | occupancy_trigger_value | 30 |
+`Motion Sensor` | wind_gust | mi/hr | motion_trigger_value | 30 |
 `Occupancy Sensor` | barometric_pressure | inHg | occupancy_trigger_value | 30 |
 ` ` | precip | in/hr | occupancy_trigger_value | 0.25 |
 ` ` | precip_accum_local_day | in | occupancy_trigger_value | 1 |
