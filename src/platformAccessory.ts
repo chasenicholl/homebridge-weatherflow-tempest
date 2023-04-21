@@ -294,7 +294,7 @@ class Fan {
 
     try {
       const value_key: string = this.accessory.context.device.fan_properties.value_key;
-      const speed: number = parseInt(this.platform.observation_data[value_key]);
+      const speed: number = Math.round(this.platform.observation_data[value_key]); // round, rather than truncate
       if (speed > 100) {
         this.platform.log.debug(`WeatherFlow Tempest is reporting wind speed exceeding 100mph: ${speed}mph`);
         return 100;

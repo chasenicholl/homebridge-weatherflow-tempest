@@ -2,11 +2,16 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
-## v2.2.3
+## v2.1.4
+* Change `fan` speed calculation to round the `wind_avg` value rather than truncate to improve reporting of wind speed.
+* Add additional screenshots for Wiki.
+* Minor updates to README.md.
+
+## v2.1.3
 * Add screenshots folder and content for Wiki.
 * Update README.md.
 
-## v2.2.2
+## v2.1.2
 * Correct units for `UV Index` and round `value` to 1 decimal place.
 * Update `README.md`.
 
