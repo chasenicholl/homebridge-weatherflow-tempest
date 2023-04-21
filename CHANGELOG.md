@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.2.3
+* Add screenshots folder and content for Wiki.
+* Update README.md.
+
 ## v2.2.2
 * Correct units for `UV Index` and round `value` to 1 decimal place.
 * Update `README.md`.
