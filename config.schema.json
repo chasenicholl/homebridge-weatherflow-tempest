@@ -21,7 +21,7 @@
                 "type": "number",
                 "required": true
             },
-            "interval": {
+            "interval (seconds)": {
                 "type": "integer",
                 "default": 10,
                 "minimum": 1

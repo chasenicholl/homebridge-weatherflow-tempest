@@ -48,8 +48,8 @@ sensor_type `{*}` | value_key | units | additional_properties | Typical | Notes
 ` ` | precip | in/hr | occupancy_trigger_value | 0.25 |
 ` ` | precip_accum_local_day | in | occupancy_trigger_value | 1 |
 ` ` | solar_radiation | W/m^2 | occupancy_trigger_value | 1000 |
-` ` | uv | UV Index | occupancy_trigger_value | 3 |
-` ` | wind_direction |   | occupancy_trigger_value | 360 |
+` ` | uv | Index | occupancy_trigger_value | 3 |
+` ` | wind_direction | degrees | occupancy_trigger_value | 360 |
 
 `{*}`  Reference: https://weatherflow.github.io/Tempest/api/swagger/#!/observations/getStationObservation
 

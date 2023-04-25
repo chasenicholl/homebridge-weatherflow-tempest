@@ -41,10 +41,10 @@ class TemperatureSensor {
       const value_key: string = this.accessory.context.device.temperature_properties.value_key;
       const temperature: number = parseFloat(this.platform.observation_data[value_key]);
       if (temperature > 100.00) {
-        this.platform.log.debug(`WeatherFlow Tempest is reporting temperatures exceeding 100c: ${temperature}c`);
+        this.platform.log.debug(`WeatherFlow Tempest is reporting temperatures exceeding 100C: ${temperature}C`);
         return 100;
       } else if (temperature < -271.00) {
-        this.platform.log.debug(`WeatherFlow Tempest is reporting temperatures less than -271c: ${temperature}c`);
+        this.platform.log.debug(`WeatherFlow Tempest is reporting temperatures less than -271C: ${temperature}C`);
         return -271.00;
       } else {
         return temperature;
@@ -294,7 +294,8 @@ class Fan {
 
     try {
       const value_key: string = this.accessory.context.device.fan_properties.value_key;
-      const speed: number = Math.round(this.platform.observation_data[value_key]); // round, rather than truncate
+      let speed: number = parseFloat(this.platform.observation_data[value_key]);
+      speed = Math.round(speed * 2.236936); // convert m/s to mph and round as fan % is integer value
       if (speed > 100) {
         this.platform.log.debug(`WeatherFlow Tempest is reporting wind speed exceeding 100mph: ${speed}mph`);
         return 100;
@@ -382,27 +383,26 @@ class OccupancySensor {
         trip_level = 0;
       }
       switch (value_key) {
-        case 'barometric_pressure': // convert from mbar to inHg
+        case 'barometric_pressure': // convert from mb to inHg
           value = Math.round(value / 33.8638 * 1000) / 1000; // 3 decimal places
           units = 'inHg';
           break;
-        case 'precip': // rate per hour
-          value = Math.round(value * 100) / 100; // inch, 2 decimal places
-          // value = Math.round(value / 25.4 * 100) / 100; // mm to inch, 2 decimal places
+        case 'precip': // convert mm/min to in/hr
+          value = Math.round(value * 2.36 * 100) / 100; // 2 decimal places
           units = 'in/hr';
           break;
-        case 'precip_accum_local_day':
-          value = Math.round(value / 25.4 * 100) / 100; // mm to inch, 2 decimal places
+        case 'precip_accum_local_day': // convert mm to in
+          value = Math.round(value / 25.4 * 100) / 100; // 2 decimal places
           units = 'in';
           break;
-        case 'solar_radiation':
+        case 'solar_radiation': // no conversion needed
           units = 'W/m\xB2';
           break;
-        case 'uv':
+        case 'uv': // no conversion needed
           value = Math.round(value * 10) / 10; // 1 decimal place
           units = ' ';
           break;
-        case 'wind_direction': // convert value to N, S, E, W as units
+        case 'wind_direction': // convert to cardinal (N, S, E, W)
           // eslint-disable-next-line no-case-declarations
           const cat = Math.round(value % 360 / 22.5);
           switch (cat) {

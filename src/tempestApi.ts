@@ -2,24 +2,28 @@ import { Logger } from 'homebridge';
 import axios, { AxiosResponse } from 'axios';
 
 export interface Observation {
-  air_temperature: number;     // temperature sensors
+  // temperature sensors
+  air_temperature: number;         // C, displayed according to Homebridge and HomeKit C/F settings
   feels_like: number;
   wind_chill: number;
   dew_point: number;
 
-  relative_humidity: number;   // humidity sensor
+  // humidity sensor
+  relative_humidity: number;       // %
 
-  wind_avg: number;            // fan
-  wind_gust: number;           // motion sensor
+  // fan and motion sensor
+  wind_avg: number;                // m/s, used for Fan speed %
+  wind_gust: number;               // m/s, used for motion sensor
 
-  barometric_pressure: number; // occupancy sensors
-  precip: number;
-  precip_accum_local_day: number;
-  wind_direction: number;
-  solar_radiation: number;
-  uv: number;
+  // occupancy sensors
+  barometric_pressure: number;     // mb
+  precip: number;                  // mm/min (minute sampling)
+  precip_accum_local_day: number;  // mm
+  wind_direction: number;          // degrees
+  solar_radiation: number;         // W/m^2
+  uv: number;                      // Index
 
-  brightness: number;          // light sensor
+  brightness: number;              // Lux
 }
 
 export class TempestApi {

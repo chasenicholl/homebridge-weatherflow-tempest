@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.1.5
+* Correct wind and precipitation sensor units. REST API reports in metric, plug-in displays in standard units.
+
 ## v2.1.4
 * Change `fan` speed calculation to round the `wind_avg` value rather than truncate to improve reporting of wind speed.
 * Add additional screenshots for Wiki.
