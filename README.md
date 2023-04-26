@@ -32,24 +32,24 @@ You will need to create an account at https://tempestwx.com/ and then generate a
 - `sensors[].motion_properties.motion_trigger.value_key`: _(Required with Motion Sensor)_ At what point (value) to trigger motion detected on/off. Minimum 1.
 - `sensors[].occupancy_properties.occupancy_trigger.value_key`: _(Required with Occupancy Sensor)_ At what point (value) to trigger occupancy detected on/off. Minimum 0.
 
-`{*}`  Replace with Sensor: temperature, humidity, light, fan
+`{*}`  Replace with Sensor: temperature, humidity, light, fan 
 
-sensor_type `{*}` | value_key | units | additional_properties | Typical | Notes
-:-- | :--- | :--- | :--- | :--- | :---
-`Temperature Sensor` | air_temperature | F | NA | NA |
-` ` | feels_like | F | NA | NA |
-` ` | wind_chill | F | NA | NA |
-` ` | dew_point | F | NA | NA |
-`Humidity Sensor` | relative_humidity | % | NA | NA |
-`Light Sensor` | brightness | lux | NA | NA |
-`Fan` | wind_avg | mi/hr | NA | NA | wind_avg speed reported as Fan %
-`Motion Sensor` | wind_gust | mi/hr | motion_trigger_value | 10 |
-`Occupancy Sensor {**}` | barometric_pressure | inHg | occupancy_trigger_value | 30 |
-` ` | precip | in/hr | occupancy_trigger_value | 0.25 |
-` ` | precip_accum_local_day | in | occupancy_trigger_value | 1 |
-` ` | solar_radiation | W/m^2 | occupancy_trigger_value | 1000 |
-` ` | uv | Index | occupancy_trigger_value | 3 |
-` ` | wind_direction | degrees | occupancy_trigger_value | 360 |
+sensor_type `{*}` | value_key | metric units | std units | additional_properties | Typ metric trigger | Typ std trigger | Notes
+:-- | :--- | :--: | :--: | :--- | :--: | :--: | :---
+`Temperature Sensor` | air_temperature | C | F | NA | NA | NA | set by UI preferences
+` ` | feels_like | C | F | NA | NA | NA | set by UI preferences
+` ` | wind_chill | C | F | NA | NA | NA | set by UI preferences
+` ` | dew_point | C | F | NA | NA | NA | set by UI preferences
+`Humidity Sensor` | relative_humidity | % | % | NA | NA | NA |
+`Light Sensor` | brightness | lux | lux | NA | NA | NA |
+`Fan` | wind_avg | m/s | mi/hr | NA | NA | NA | wind_avg speed reported as Fan %
+`Motion Sensor` | wind_gust | m/s | mi/hr | motion_trigger_value | 5 | 10 |
+`Occupancy Sensor {**}` | barometric_pressure | mb | inHg | occupancy_trigger_value | 1000 | 30 |
+` ` | precip | mm/min | in/hr | occupancy_trigger_value | 0.1 | 0.25 |
+` ` | precip_accum_local_day | mm | in | occupancy_trigger_value | 25 | 1 |
+` ` | solar_radiation | W/m^2 | W/m^2 | occupancy_trigger_value | 1000| 1000 |
+` ` | uv | Index | Index | occupancy_trigger_value | 3 | 3 |
+` ` | wind_direction | degrees | degrees | occupancy_trigger_value | 360 | 360 |
 
 `{*}`  Reference: https://weatherflow.github.io/Tempest/api/swagger/#!/observations/getStationObservation
 
@@ -63,6 +63,7 @@ sensor_type `{*}` | value_key | units | additional_properties | Typical | Notes
   "token": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
   "station_id": 10000,
   "interval": 10,
+  "units": "Standard",
   "sensors": [
       {
           "name": "Temperature",

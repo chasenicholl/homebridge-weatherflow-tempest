@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.1.7
+* Add option to display metric or standard units for barometric, wind, and precipitation sensors. Note that C/F preference is set by Homebridge UI or HomeKit settings.
+* Update `config.schema.json` and `README.md` form metric/standard units. 
+
 ## v2.1.6
 * Correct occupancy sensor units. REST API reports in metric, plug-in displays in standard units.
 

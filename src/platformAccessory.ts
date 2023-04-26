@@ -222,7 +222,13 @@ class MotionSensor {
     try {
       const value_key: string = this.accessory.context.device.motion_properties.value_key;
       let speed: number = parseFloat(this.platform.observation_data[value_key]);
-      speed = Math.round(speed * 2.236936); // convert m/s to mph and round
+
+      if (this.platform.config.units === 'Metric') {
+        speed = Math.round(speed);
+      } else {
+        speed = Math.round(speed * 2.236936); // convert m/s to mph
+      }
+
       if (speed < 0) {
         this.platform.log.debug(`WeatherFlow Tempest Motion Sensor is reporting less than 0: ${speed}`);
         return 0;
@@ -384,17 +390,32 @@ class OccupancySensor {
         trip_level = 0;
       }
       switch (value_key) {
-        case 'barometric_pressure': // convert from mb to inHg
-          value = Math.round(value / 33.8638 * 1000) / 1000; // 3 decimal places
-          units = 'inHg';
+        case 'barometric_pressure':
+          if (this.platform.config.units === 'Metric') {
+            value = Math.round(value * 1000) / 1000; // 3 decimal places
+            units = 'mb';
+          } else {
+            value = Math.round(value / 33.8638 * 1000) / 1000; // convert from mb to inHg
+            units = 'inHg';
+          }
           break;
-        case 'precip': // convert mm/min to in/hr
-          value = Math.round(value * 2.36 * 100) / 100; // 2 decimal places
-          units = 'in/hr';
+        case 'precip': //
+          if (this.platform.config.units === 'Metric') {
+            value = Math.round(value * 100) / 100; // 2 decimal places
+            units = 'mm/min';
+          } else {
+            value = Math.round(value * 2.36 * 100) / 100; // convert mm/min to in/hr
+            units = 'in/hr';
+          }
           break;
         case 'precip_accum_local_day': // convert mm to in
-          value = Math.round(value / 25.4 * 100) / 100; // 2 decimal places
-          units = 'in';
+          if (this.platform.config.units === 'Metric') {
+            value = Math.round(value * 100) / 100; // 2 decimal places
+            units = 'mm';
+          } else {
+            value = Math.round(value / 25.4 * 100) / 100; // convert mm to in
+            units = 'in';
+          }
           break;
         case 'solar_radiation': // no conversion needed
           units = 'W/m\xB2';
@@ -403,7 +424,7 @@ class OccupancySensor {
           value = Math.round(value * 10) / 10; // 1 decimal place
           units = ' ';
           break;
-        case 'wind_direction': // convert to cardinal (N, S, E, W)
+        case 'wind_direction': // convert from degrees to cardinal (N, S, E, W)
           // eslint-disable-next-line no-case-declarations
           const cat = Math.round(value % 360 / 22.5);
           switch (cat) {

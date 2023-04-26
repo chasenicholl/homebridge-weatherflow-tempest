@@ -21,10 +21,20 @@
                 "type": "number",
                 "required": true
             },
-            "interval (seconds)": {
+            "interval": {
+                "title": "Interval (seconds)",
                 "type": "integer",
                 "default": 10,
                 "minimum": 1
+            },
+            "units": {
+                "title": "Units",
+                "type": "string",
+                "enum": [
+                    "Standard",
+                    "Metric"
+                ],
+                "default": "Standard"
             },
             "sensors": {
                 "title": "Weather Sensors",
