@@ -144,7 +144,7 @@ export class TempestApi {
 
   }
 
-  private async getTempestDeviceID(): Promise<number> {
+private async getTempestDeviceId(): Promise<number> {
 
     const url = `https://swd.weatherflow.com/swd/rest/stations/${this.station_id}`;
     const options = {
