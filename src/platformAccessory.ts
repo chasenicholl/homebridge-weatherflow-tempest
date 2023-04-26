@@ -221,7 +221,8 @@ class MotionSensor {
 
     try {
       const value_key: string = this.accessory.context.device.motion_properties.value_key;
-      const speed: number = parseInt(this.platform.observation_data[value_key]);
+      let speed: number = parseFloat(this.platform.observation_data[value_key]);
+      speed = Math.round(speed * 2.236936); // convert m/s to mph and round
       if (speed < 0) {
         this.platform.log.debug(`WeatherFlow Tempest Motion Sensor is reporting less than 0: ${speed}`);
         return 0;

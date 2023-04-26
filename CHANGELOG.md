@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.1.6
+* Correct occupancy sensor units. REST API reports in metric, plug-in displays in standard units.
+
 ## v2.1.5
 * Correct wind and precipitation sensor units. REST API reports in metric, plug-in displays in standard units.
 
