@@ -118,9 +118,7 @@ export class TempestApi {
 
   }
 
-  public async getTempestBatteryLevel(): Promise<number> {
-
-    const device_id = await this.getTempestDeviceID();
+  public async getTempestBatteryLevel(device_id): Promise<number> {
 
     const url = `https://swd.weatherflow.com/swd/rest/observations/device/${device_id}`;
     const options = {
@@ -144,7 +142,7 @@ export class TempestApi {
 
   }
 
-  private async getTempestDeviceID(): Promise<number> {
+  public async getTempestDeviceId(): Promise<number> {
 
     const url = `https://swd.weatherflow.com/swd/rest/stations/${this.station_id}`;
     const options = {

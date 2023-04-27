@@ -21,8 +21,9 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
   public readonly accessories: PlatformAccessory[] = [];
   private tempestApi: TempestApi;
 
-  public observation_data: Observation; // Observation data for Accessories to use.
+  public observation_data: Observation;  // Observation data for Accessories to use.
   public tempest_battery_level!: number; // Tempest battery level
+  public tempest_device_id!: number;     // Tempest device ID
 
   private activeAccessory: PlatformAccessory[] = []; // array of active Tempest sensors
 
@@ -53,6 +54,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       dew_point: 0,
     };
     this.tempest_battery_level = 0;
+    this.tempest_device_id = 0;
 
     // Make sure the Station ID is the integer ID
     if (isNaN(this.config.station_id)) {
@@ -92,15 +94,19 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
           // Remove cached sensors that are no longer required.
           this.removeDevices();
 
-          // Initialize battery level
-          this.tempestApi.getTempestBatteryLevel().then( (battery_level: number) => {
+          // Determine Tempest device_id & initial battery level
+          this.tempestApi.getTempestDeviceId().then( (device_id: number) => {
+            this.tempest_device_id = device_id;
 
-            if (!battery_level) {
-              log.info('Failed to fetch initial Tempest battery level');
-              return;
-            }
+            this.tempestApi.getTempestBatteryLevel(this.tempest_device_id).then( (battery_level: number) => {
 
-            this.tempest_battery_level = battery_level;
+              if (battery_level === undefined) {
+                this.log.info('Failed to fetch initial Tempest battery level');
+                return;
+              }
+              this.tempest_battery_level = battery_level;
+
+            });
 
           });
 
@@ -141,7 +147,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
         });
 
         // Update Battery percentage
-        this.tempestApi.getTempestBatteryLevel().then( (battery_level: number) => {
+        this.tempestApi.getTempestBatteryLevel(this.tempest_device_id).then( (battery_level: number) => {
 
           if (battery_level === undefined) {
             this.log.warn('battery_level is undefined, skipping update');

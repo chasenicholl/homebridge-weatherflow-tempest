@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.1.8
+* Revise `platform.ts` and `tempestAPI.ts` to determine `tempest_device_id` once on plugin startup.
+* Change `node-version` to `[14.x, 16.x, 18.x]` in `build.yml`. Homebridge only supports even node versions.
+
 ## v2.1.7
 * Add option to display metric or standard units for barometric, wind, and precipitation sensors. Note that C/F preference is set by Homebridge UI or HomeKit settings.
 * Update `config.schema.json` and `README.md` form metric/standard units. 
