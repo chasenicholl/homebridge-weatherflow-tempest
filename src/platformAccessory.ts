@@ -245,14 +245,14 @@ class MotionSensor {
   private isMotionDetected(): boolean {
 
     const current_value = this.getMotionSensorValue();
-    let motion_trigger_value = 1;
+    let trigger_value = 1;
     try {
-      motion_trigger_value = this.accessory.context.device.motion_properties.motion_trigger_value;
+      trigger_value = this.accessory.context.device.motion_properties.trigger_value;
     } catch(exception) {
       this.platform.log.error(exception as string);
       this.platform.log.warn('Defaulting to 1 as motion trigger value.');
     }
-    return current_value >= motion_trigger_value;
+    return current_value >= trigger_value;
 
   }
 
@@ -352,11 +352,11 @@ class OccupancySensor {
     const [sensorValue, sensorUnits, sensorTrip] = this.getOccupancySensorValue();
 
     this.service.getCharacteristic(
-      this.platform.Characteristic.OccupancyDetected).updateValue((sensorValue >= sensorTrip),
+      this.platform.Characteristic.Name).updateValue(`${sensorName}: ${sensorValue} ${sensorUnits}`,
     );
 
     this.service.getCharacteristic(
-      this.platform.Characteristic.Name).updateValue(`${sensorName}: ${sensorValue} ${sensorUnits}`,
+      this.platform.Characteristic.OccupancyDetected).updateValue((sensorValue >= sensorTrip),
     );
 
     // Update occupancy sensor state and name based on user defined global interval
@@ -378,17 +378,19 @@ class OccupancySensor {
 
   }
 
-  private getOccupancySensorValue(): [number, string, number] {
+  private getOccupancySensorValue(): [value: number, units: string, trip_level: number] {
 
     try {
       const value_key: string = this.accessory.context.device.occupancy_properties.value_key;
+      let trip_level = this.accessory.context.device.occupancy_properties.trigger_value;
       let value: number = parseFloat(this.platform.observation_data[value_key]);
       let units = '';
-      let trip_level = this.accessory.context.device.occupancy_properties.occupancy_trigger_value;
+
       // check that trip_level is not less than 0
       if (trip_level < 0) {
         trip_level = 0;
       }
+
       switch (value_key) {
         case 'barometric_pressure':
           if (this.platform.config.units === 'Metric') {
@@ -486,13 +488,17 @@ class OccupancySensor {
         default:
           break;
       }
+
       if (value < 0) {
+        value = 0;
         this.platform.log.debug(`WeatherFlow Tempest ${value_key} is reporting less than 0: ${value}`);
-        return [0, units, trip_level];
+        return [value, units, trip_level];
+
       } else {
         this.platform.log.debug(`WeatherFlow Tempest ${value_key}: ${value} ${units}, trip_level: ${trip_level}`);
         return [value, units, trip_level];
       }
+
     } catch(exception) {
       this.platform.log.error(exception as string);
       return [0, '', 1000];

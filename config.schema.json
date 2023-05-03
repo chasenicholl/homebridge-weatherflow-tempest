@@ -135,7 +135,7 @@
                                         "wind_gust"
                                     ]
                                 },
-                                "motion_trigger_value": {
+                                "trigger_value": {
                                     "type": "number",
                                     "minimum": 1,
                                     "description": "At what point (value) to trigger motion detected on/off (1 minimum)."
@@ -161,7 +161,7 @@
                                         "uv"
                                     ]
                                 },
-                                "occupancy_trigger_value": {
+                                "trigger_value": {
                                     "type": "number",
                                     "minimum": 0,
                                     "description": "At what point (value) to trigger occupancy detected on/off (0 minimum)."

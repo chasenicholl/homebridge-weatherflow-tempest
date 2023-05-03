@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.1.9
+* Update accessory initialization to align with new `config.json` format.
+* Ensure that any `config.json` changes are picked up during plugin startup and `accessory.context` is updated.
+
 ## v2.1.8
 * Revise `platform.ts` and `tempestAPI.ts` to determine `tempest_device_id` once on plugin startup.
 * Change `node-version` to `[14.x, 16.x, 18.x]` in `build.yml`. Homebridge only supports even node versions.
