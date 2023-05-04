@@ -84,7 +84,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
         this.tempestApi.getStationCurrentObservation(0).then( (observation_data: Observation) => {
 
           if (!observation_data) {
-            log.info('Failed to fetch initial Station Current Observations after retrying. Refusing to continue.');
+            log.warn('Failed to fetch initial Station Current Observations after retrying. Refusing to continue.');
             return;
           }
 
@@ -108,7 +108,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
             this.tempestApi.getTempestBatteryLevel(this.tempest_device_id).then( (battery_level: number) => {
 
               if (battery_level === undefined) {
-                this.log.info('Failed to fetch initial Tempest battery level');
+                this.log.warn('Failed to fetch initial Tempest battery level');
                 return;
               }
               this.tempest_battery_level = battery_level;

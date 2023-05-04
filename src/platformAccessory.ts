@@ -382,13 +382,13 @@ class OccupancySensor {
 
     try {
       const value_key: string = this.accessory.context.device.occupancy_properties.value_key;
-      let trip_level = this.accessory.context.device.occupancy_properties.trigger_value;
+      let trigger_value = this.accessory.context.device.occupancy_properties.trigger_value;
       let value: number = parseFloat(this.platform.observation_data[value_key]);
       let units = '';
 
       // check that trip_level is not less than 0
-      if (trip_level < 0) {
-        trip_level = 0;
+      if (trigger_value < 0) {
+        trigger_value = 0;
       }
 
       switch (value_key) {
@@ -492,11 +492,11 @@ class OccupancySensor {
       if (value < 0) {
         value = 0;
         this.platform.log.debug(`WeatherFlow Tempest ${value_key} is reporting less than 0: ${value}`);
-        return [value, units, trip_level];
+        return [value, units, trigger_value];
 
       } else {
-        this.platform.log.debug(`WeatherFlow Tempest ${value_key}: ${value} ${units}, trip_level: ${trip_level}`);
-        return [value, units, trip_level];
+        this.platform.log.debug(`WeatherFlow Tempest ${value_key}: ${value} ${units}, trip_level: ${trigger_value}`);
+        return [value, units, trigger_value];
       }
 
     } catch(exception) {
@@ -630,7 +630,6 @@ export class WeatherFlowTempestPlatformAccessory {
       .setCharacteristic(this.platform.Characteristic.Model, `Tempest - ${this.accessory.context.device.name}`)
       .setCharacteristic(this.platform.Characteristic.SerialNumber, `${this.platform.config.station_id}`);
 
-    // ["Temperature Sensor", "Light Sensor", "Humidity Sensor", "Fan", "Motion Sensor", "Occupancy Sensor"]
     switch (this.accessory.context.device.sensor_type) {
       case 'Temperature Sensor':
         new TemperatureSensor(this.platform, this.accessory);
