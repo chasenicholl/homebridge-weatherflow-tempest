@@ -55,7 +55,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
 
 `{3}` Reference Wiki for details on how to view Occupancy Sensor values with iOS 16.x and MacOS Ventura 13.x.
 
-`{4}` <b><u>NOTE:</u></b> There is a current limitation with v3.0.0 of the plug-in in that HomeKit accessory names are set when the accessory is <u>initially</u> added and cannot be dynamically updated. The accessories are correctly displayed and updated in the Homebridge "Accessories" tab of the webpage interface.
+`{4}` <b><u>NOTE:</u></b> There is a current limitation with v3.0.0 of the plug-in in that HomeKit accessory names are set when the accessory is <u>initially</u> added and cannot be dynamically updated. The accessories are correctly displayed and updated in the Homebridge "Accessories" tab of the webpage interface. Occupancy sensors `trigger_value` status is correctly displayed in both HomeKit and Homebridge.
 
 ### Config Example
 
