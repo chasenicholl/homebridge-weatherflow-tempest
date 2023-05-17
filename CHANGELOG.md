@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v3.0.0
+* New version providing additional functionality using `occupancy sensors` to display the Tempest sensor values. <br><u>NOTE:</u> There is a current limitation as HomeKit accessory names are set when the accessory is initially added and cannot be dynamically updated. The accessories are correctly displayed and updated in the Homebridge "Accessories" tab of the webpage interface. This version is not backwards compatible.
+
+* Update supported `node-versions` to `[14.x, 16.x, 18.x]` in per homebridge guidelines.
+* Add functionality to unregister deleted or renamed sensors. Renamed sensors will be added as new sensor and prior version deleted.
+
+* Add `barometric_pressure`, `precip`, `precip_accum_local_day`, `solar radiation` and `uv` as `occupancy sensors` which display the numerical value of the characteristic as part of the occupancy sensor name. Trip levels can be set for each occupancy sensor.
+* Add battery level to `air_temperature` Temperature sensor.
+* Change PlatformAccessory SerialNumber from `000` to `station_id`.
+* Correct occupancy sensor units. REST API reports in metric, plug-in displays in standard units.
+* Correct `fan` speed units and calculation to round the `wind_avg` value rather than truncate to improve reporting of wind speed.
+* Revise `platform.ts` and `tempestApi.ts` to determine `tempest_device_id` once on plugin startup.
+* Update `platformAccessory.ts` to use `sensor_properties.value_key` for each sensor type.
+
+* Update `config.schema.json` with new functionality to provide drop-down for available `value_key` options that are associated with the `sensor_type`. Add option to display metric or standard units for barometric, wind, and precipitation sensors. Note that C/F preference is set by Homebridge UI or HomeKit settings.
+* Ensure that any `config.schema.json` changes are picked up during plugin startup and `accessory.context` is updated.
+
+* Update `README.md` with new functionality, clarifying `sensor_type` and associated `value_key` options, provide typical trip values, and to provide additional details and `occupancy_sensor` limitations.
+
+* Add screenshots folder and content for Wiki.
+
 ## v2.0.1
 Updates to address runtime errors:
 * `platform.ts`:
