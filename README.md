@@ -17,6 +17,16 @@ Homebridge Plugin providing basic WeatherFlow Tempest support. Exposing 7 Acesso
 - Fan (expressed as Rotation Speed - Wind Speed 0-100mph)
 - Battery Sensor (added to `air_temperature` Temperature sensor)
 
+<br>
+
+---
+<u><h3 align=center>NOTE:</h3></u>
+
+It is recommended when upgrading to v3.0 of the plugin from a prior version that you save your configuration information including `token` and `station_id`, uninstall the prior version of the plugin, restart Homebridge to clear the accessory cache, install v3.0 of the plugin, enter your Settings, and finally restart Homebridge to initialize the plugin.
+
+---
+<br>
+
 ### Setup and Parameters
 
 You will need to create an account at https://tempestwx.com/ and then generate a Personal Use Token https://tempestwx.com/settings/tokens.

@@ -43,6 +43,9 @@
                 "items": {
                     "type": "object",
                     "properties": {
+                        "name": {
+                            "type": "string"
+                        },
                         "sensor_type": {
                             "type": "string",
                             "enum": [
