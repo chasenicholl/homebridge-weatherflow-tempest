@@ -3,7 +3,8 @@
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
 ## v3.0.1
-* Re-adding required `name` property to Sensors. It was mistakenly removed during the 3.0.0 migration.
+* Update `config.schema.json` to include sensor `name` field.
+* Add cautionary note to `README.md` when upgrading from a previous version of the plugin.
 
 ## v3.0.0
 * New version providing additional functionality using `occupancy sensors` to display the Tempest sensor values. <br><u>NOTE:</u> There is a current limitation as HomeKit accessory names are set when the accessory is initially added and cannot be dynamically updated. The accessories are correctly displayed and updated in the Homebridge "Accessories" tab of the webpage interface. This version is not backwards compatible.
