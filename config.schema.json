@@ -43,6 +43,11 @@
                 "items": {
                     "type": "object",
                     "properties": {
+                        "name": {
+                            "title": "Name",
+                            "type": "string",
+                            "required": true
+                        },
                         "sensor_type": {
                             "type": "string",
                             "enum": [
@@ -55,7 +60,6 @@
                             ],
                             "default": "Temperature Sensor"
                         },
-
                         "fan_properties": {
                             "title": "Fan Properties",
                             "type": "object",
