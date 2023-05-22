@@ -44,7 +44,9 @@
                     "type": "object",
                     "properties": {
                         "name": {
-                            "type": "string"
+                            "title": "Name",
+                            "type": "string",
+                            "required": true
                         },
                         "sensor_type": {
                             "type": "string",
@@ -58,7 +60,6 @@
                             ],
                             "default": "Temperature Sensor"
                         },
-
                         "fan_properties": {
                             "title": "Fan Properties",
                             "type": "object",
