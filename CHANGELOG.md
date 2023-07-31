@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v3.0.2
+* [Housekeeping] Update node-version: [16.x, 18.x, 20.x], remove 14.x which is no longer supported by homebridge.
+
 ## v3.0.1
 * Update `config.schema.json` to include sensor `name` field.
 * Add cautionary note to `README.md` when upgrading from a previous version of the plugin.
