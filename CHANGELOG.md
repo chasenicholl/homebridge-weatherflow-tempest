@@ -3,7 +3,17 @@
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
 ## v3.0.2
-* [Housekeeping] Update node-version: [16.x, 18.x, 20.x], remove 14.x which is no longer supported by homebridge.
+* Update node-version: [16.x, 18.x, 20.x], remove 14.x which is no longer supported by homebridge.
+* Update `devDependencies` and `dependencies` to latest versions. Update/lock `axios` to version `1.5.0`.
+* Change `validateStatus` from `<500` to `>= 200 && status < 300` for `axios.get` calls throughout `tempestApi.ts`.
+* Delete `isResponseGood` function in `tempestApi.ts` as additional `obs` parsing is not required.
+* Updates to `tempestApi.ts`:
+  * Add explicit `Promise` returns to `getStationObservation`.
+  * Revise `url` in `axios.get` calls to include `token` and not use `headers` option.
+  * Add `timeout: 1000` to `axios.get` calls as check for hung query.
+  * Refactor `getStationCurrentObservation` so that retry loop is executed.
+* Updates to `package.ts`:
+  * Revise `setInterval` loop to make use of `async/await`.
 
 ## v3.0.1
 * Update `config.schema.json` to include sensor `name` field.

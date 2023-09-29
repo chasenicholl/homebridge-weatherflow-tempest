@@ -16,7 +16,7 @@ export interface Observation {
   wind_gust: number;               // m/s, used for motion sensor
 
   // occupancy sensors
-  barometric_pressure: number;     // mb
+  barometric_pressure: number;     // mbar
   precip: number;                  // mm/min (minute sampling)
   precip_accum_local_day: number;  // mm
   wind_direction: number;          // degrees
@@ -49,20 +49,20 @@ export class TempestApi {
 
   }
 
-  private async getStationObservation() {
+  private async getStationObservation(): Promise<AxiosResponse | undefined> {
 
     try {
-      const url = `https://swd.weatherflow.com/swd/rest/observations/station/${this.station_id}`;
+      const url = `https://swd.weatherflow.com/swd/rest/observations/station/${this.station_id}?token=${this.token}`;
       const options = {
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
-        },
-        validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
+        timeout: 1000,
+        validateStatus: (status: number) => status >= 200 && status < 300, // Default
       };
-      return await axios.get(url, options);
-    } catch(exception) {
-      this.log.debug(`[WeatherFlow] ${exception}`);
-      return;
+      const observation = await axios.get(url, options);
+      return observation;
+
+    } catch(error) {
+      this.log.warn(`[WeatherFlow] ${error}`);
+      return undefined;
     }
 
   }
@@ -70,23 +70,6 @@ export class TempestApi {
   private async delay(ms: number): Promise<unknown> {
 
     return new Promise(resolve => setTimeout(resolve, ms));
-
-  }
-
-  private isResponseGood(response: AxiosResponse): boolean {
-
-    try {
-      if (!response || !response.data) {
-        return false;
-      } else if (typeof response.data === 'string') {
-        return ('obs' in JSON.parse(response.data));
-      } else {
-        return ('obs' in response.data);
-      }
-    } catch(exception) {
-      this.log.error(exception as string);
-      return false;
-    }
 
   }
 
@@ -98,16 +81,21 @@ export class TempestApi {
     }
 
     const response = await this.getStationObservation();
-    if (!response || !this.isResponseGood(response)) {
+
+    if (response === undefined) {
       this.log.warn('Response missing "obs" data.');
+
       if (this.data !== undefined) {
         this.log.warn('Returning last cached response.');
         return this.data;
+
+      } else {
+        this.log.warn(`Retrying ${retry_count + 1} of ${this.max_retries}. No cached "obs" data.`);
+        retry_count += 1;
+        await this.delay(1000 * retry_count);
+        return await this.getStationCurrentObservation(retry_count);
       }
-      this.log.warn(`Retrying ${retry_count + 1} of ${this.max_retries}. No cached "obs" data.`);
-      retry_count += 1;
-      await this.delay(1000 * retry_count);
-      return await this.getStationCurrentObservation(retry_count);
+
     } else {
       if (typeof response.data === 'string') {
         response.data = JSON.parse(response.data);
@@ -120,12 +108,10 @@ export class TempestApi {
 
   public async getTempestBatteryLevel(device_id): Promise<number> {
 
-    const url = `https://swd.weatherflow.com/swd/rest/observations/device/${device_id}`;
+    const url = `https://swd.weatherflow.com/swd/rest/observations/device/${device_id}?token=${this.token}`;
     const options = {
-      headers: {
-        'Authorization': `Bearer ${this.token}`,
-      },
-      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
+      timeout: 1000,
+      validateStatus: (status: number) => status >= 200 && status < 300, // Default
     };
 
     await axios.get(url, options) // assumes single Tempest station
@@ -144,12 +130,10 @@ export class TempestApi {
 
   public async getTempestDeviceId(): Promise<number> {
 
-    const url = `https://swd.weatherflow.com/swd/rest/stations/${this.station_id}`;
+    const url = `https://swd.weatherflow.com/swd/rest/stations/${this.station_id}?token=${this.token}`;
     const options = {
-      headers: {
-        'Authorization': `Bearer ${this.token}`,
-      },
-      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
+      timeout: 1000,
+      validateStatus: (status: number) => status >= 200 && status < 300, // Default
     };
 
     await axios.get(url, options) // assumes single hub with single Tempest station
