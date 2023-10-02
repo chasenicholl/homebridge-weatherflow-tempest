@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v3.0.3
+* Updates to `tempestApi.ts` to minimize `ETIMEDOUT` error:
+  * Revert `axios.get` calls to include `headers:` declaration.
+  * Add `import https from 'https';`
+  * Add `axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });`
+  * Add `axios.defaults.timeout = 10000;` and remove timeout from `axios.get` calls.
+
 ## v3.0.2
 * Update node-version: [16.x, 18.x, 20.x], remove 14.x which is no longer supported by homebridge.
 * Update `devDependencies` and `dependencies` to latest versions. Update/lock `axios` to version `1.5.0`.

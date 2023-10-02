@@ -1,5 +1,9 @@
 import { Logger } from 'homebridge';
 import axios, { AxiosResponse } from 'axios';
+import https from 'https';
+
+axios.defaults.timeout = 10000; // same as default interval
+axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
 
 export interface Observation {
   // temperature sensors
@@ -52,9 +56,11 @@ export class TempestApi {
   private async getStationObservation(): Promise<AxiosResponse | undefined> {
 
     try {
-      const url = `https://swd.weatherflow.com/swd/rest/observations/station/${this.station_id}?token=${this.token}`;
+      const url = `https://swd.weatherflow.com/swd/rest/observations/station/${this.station_id}`;
       const options = {
-        timeout: 1000,
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+        },
         validateStatus: (status: number) => status >= 200 && status < 300, // Default
       };
       const observation = await axios.get(url, options);
@@ -108,9 +114,11 @@ export class TempestApi {
 
   public async getTempestBatteryLevel(device_id): Promise<number> {
 
-    const url = `https://swd.weatherflow.com/swd/rest/observations/device/${device_id}?token=${this.token}`;
+    const url = `https://swd.weatherflow.com/swd/rest/observations/device/${device_id}`;
     const options = {
-      timeout: 1000,
+      headers: {
+        'Authorization': `Bearer ${this.token}`,
+      },
       validateStatus: (status: number) => status >= 200 && status < 300, // Default
     };
 
@@ -130,9 +138,11 @@ export class TempestApi {
 
   public async getTempestDeviceId(): Promise<number> {
 
-    const url = `https://swd.weatherflow.com/swd/rest/stations/${this.station_id}?token=${this.token}`;
+    const url = `https://swd.weatherflow.com/swd/rest/stations/${this.station_id}`;
     const options = {
-      timeout: 1000,
+      headers: {
+        'Authorization': `Bearer ${this.token}`,
+      },
       validateStatus: (status: number) => status >= 200 && status < 300, // Default
     };
 
