@@ -103,9 +103,6 @@ export class TempestApi {
       }
 
     } else {
-      if (typeof response.data === 'string') {
-        response.data = JSON.parse(response.data);
-      }
       this.data = response.data['obs'][0];
       return this.data;
     }
