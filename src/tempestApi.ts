@@ -63,8 +63,8 @@ export class TempestApi {
         },
         validateStatus: (status: number) => status >= 200 && status < 300, // Default
       };
-      const observation = await axios.get(url, options);
-      return observation;
+      const response = await axios.get(url, options);
+      return response;
 
     } catch(error) {
       this.log.warn(`[WeatherFlow] ${error}`);
@@ -103,8 +103,14 @@ export class TempestApi {
       }
 
     } else {
-      this.data = response.data['obs'][0];
+
+      if (typeof response.data === 'string') {
+        this.data = JSON.parse(response.data['obs'][0]);
+      } else {
+        this.data = response.data['obs'][0];
+      }
       return this.data;
+
     }
 
   }
