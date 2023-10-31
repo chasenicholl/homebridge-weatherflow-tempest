@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
 ## v3.0.3
-* Update node-version: [18.x, 20.x, 22.x], remove 16.x which is no longer supported by homebridge.
+* Update node-version: [18.x, 20.x], remove 16.x which is no longer supported by homebridge.
 * Reformated `getStationObservation()` and `getStationCurrentObservation()` in `tempestApi.ts`.
 * Addresses `observation_data is undefined, skipping update` error in `platform.ts` polling loop.
 
