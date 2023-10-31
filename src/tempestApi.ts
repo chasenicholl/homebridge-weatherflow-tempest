@@ -55,21 +55,26 @@ export class TempestApi {
 
   private async getStationObservation(): Promise<AxiosResponse | undefined> {
 
-    try {
-      const url = `https://swd.weatherflow.com/swd/rest/observations/station/${this.station_id}`;
-      const options = {
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
-        },
-        validateStatus: (status: number) => status >= 200 && status < 300, // Default
-      };
-      const response = await axios.get(url, options);
-      return response;
+    let observation: AxiosResponse | undefined;
 
-    } catch(error) {
-      this.log.warn(`[WeatherFlow] ${error}`);
-      return undefined;
-    }
+    const url = `https://swd.weatherflow.com/swd/rest/observations/station/${this.station_id}`;
+    const options = {
+      headers: {
+        'Authorization': `Bearer ${this.token}`,
+      },
+      validateStatus: (status: number) => status >= 200 && status < 300, // Default
+    };
+
+    await axios.get(url, options)
+      .then(response => {
+        observation = response.data['obs'][0];
+      })
+
+      .catch(exception => {
+        this.log.warn(`[WeatherFlow] ${exception}`);
+      });
+
+    return observation;
 
   }
 
@@ -86,9 +91,9 @@ export class TempestApi {
       return;
     }
 
-    const response = await this.getStationObservation();
+    const observation = await this.getStationObservation();
 
-    if (response === undefined) {
+    if (observation === undefined) {
       this.log.warn('Response missing "obs" data.');
 
       if (this.data !== undefined) {
@@ -99,16 +104,12 @@ export class TempestApi {
         this.log.warn(`Retrying ${retry_count + 1} of ${this.max_retries}. No cached "obs" data.`);
         retry_count += 1;
         await this.delay(1000 * retry_count);
-        return await this.getStationCurrentObservation(retry_count);
+        return this.getStationCurrentObservation(retry_count);
       }
 
     } else {
 
-      if (typeof response.data === 'string') {
-        this.data = JSON.parse(response.data['obs'][0]);
-      } else {
-        this.data = response.data['obs'][0];
-      }
+      this.data = observation;
       return this.data;
 
     }
@@ -132,7 +133,7 @@ export class TempestApi {
       })
 
       .catch(exception => {
-        this.log.debug(`[WeatherFlow] ${exception}`);
+        this.log.warn(`[WeatherFlow] ${exception}`);
       });
 
     return this.tempest_battery_level;
@@ -155,8 +156,9 @@ export class TempestApi {
       })
 
       .catch(exception => {
-        this.log.debug(`[WeatherFlow] ${exception}`);
+        this.log.warn(`[WeatherFlow] ${exception}`);
       });
+
     return this.tempest_device_id;
 
   }

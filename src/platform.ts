@@ -42,6 +42,8 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
     // Initialize TempestApi
     this.tempestApi = new TempestApi(this.config.token, this.config.station_id, log);
+
+    // initialize observation_data
     this.observation_data = {
       air_temperature: 0,
       barometric_pressure: 0,
