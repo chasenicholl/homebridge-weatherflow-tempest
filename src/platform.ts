@@ -3,7 +3,7 @@ import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { WeatherFlowTempestPlatformAccessory } from './platformAccessory';
 
-import { TempestApi, Observation } from './tempestApi';
+import { TempestApi, Observation } from './tempest';
 
 interface TempestSensor {
   name: string;
