@@ -42,6 +42,8 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
     // Initialize TempestApi
     this.tempestApi = new TempestApi(this.config.token, this.config.station_id, log);
+
+    // initialize observation_data
     this.observation_data = {
       air_temperature: 0,
       barometric_pressure: 0,
@@ -138,10 +140,10 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     const interval = (this.config.interval as number || 10) * 1000;
     this.log.debug(`Tempest API Polling interval (ms) -> ${interval}`);
 
-    setInterval( () => {
+    setInterval( async () => {
 
       // Update Observation data
-      this.tempestApi.getStationCurrentObservation(0).then( (observation_data: Observation) => {
+      await this.tempestApi.getStationCurrentObservation(0).then( (observation_data: Observation) => {
 
         if (observation_data === undefined) {
           this.log.warn('observation_data is undefined, skipping update');
@@ -152,7 +154,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       });
 
       // Update Battery percentage
-      this.tempestApi.getTempestBatteryLevel(this.tempest_device_id).then( (battery_level: number) => {
+      await this.tempestApi.getTempestBatteryLevel(this.tempest_device_id).then( (battery_level: number) => {
 
         if (battery_level === undefined) {
           this.log.warn('battery_level is undefined, skipping update');
