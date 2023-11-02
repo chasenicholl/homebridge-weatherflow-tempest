@@ -1,6 +1,12 @@
 import { Logger } from 'homebridge';
 import axios, { AxiosResponse } from 'axios';
 import * as dgram from 'dgram';
+import https from 'https';
+
+
+axios.defaults.timeout = 10000; // same as default interval
+axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
+
 
 export interface Observation {
   // temperature sensors
@@ -17,7 +23,7 @@ export interface Observation {
   wind_gust: number;               // m/s, used for motion sensor
 
   // occupancy sensors
-  barometric_pressure: number;     // mb
+  barometric_pressure: number;     // mbar
   precip: number;                  // mm/min (minute sampling)
   precip_accum_local_day: number;  // mm
   wind_direction: number;          // degrees
@@ -27,44 +33,34 @@ export interface Observation {
   brightness: number;              // Lux
 }
 
-export interface SocketObservation {
-
-  timestamp: number;
-  windLull: number;
-  windSpeed: number;
-  windGust: number;
-  windDirection: number;
-  pressure: number;
-  temperature: number;
-  humidity: number;
-  illumination: number;
-  uvIndex: number;
-  solarRadiation: number;
-  rain: number;
-  strikes: number;
-  lightningDistance: number;
-  reportingInterval: number;
-
-}
-
 
 export class TempestSocket {
 
   private log: Logger;
   private s: dgram.Socket;
+  private data: object | undefined;
+  private tempest_battery_level: number;
 
-  constructor(log: Logger, address = '0.0.0.0', port = 50222) {
+  constructor(log: Logger) {
 
     this.log = log;
+    this.data = undefined;
+    this.tempest_battery_level = 0;
     this.s = dgram.createSocket('udp4');
+
+    this.log.info('TempestSocket initialized.');
+
+  }
+
+  public start(address = '0.0.0.0', port = 50222) {
+
     this.setupSocket(address, port);
     this.setupSignalHandlers();
+
   }
 
   private setupSocket(address: string, port: number) {
 
-    // this.s.setsockopt(dgram.SOL_SOCKET, dgram.SO_REUSEADDR, 1);
-    // this.s.setsockopt(dgram.SOL_SOCKET, dgram.SO_REUSEPORT, 1);
     this.s.bind({ address: address, port: port });
     this.s.on('message', (msg) => {
       try {
@@ -84,52 +80,44 @@ export class TempestSocket {
   }
 
   private processReceivedData(data: any) {
-    // if (data.type === 'obs_air') {
-    //   console.log(data);
-    //   // air_tm = this.air_data(data, air_tm);
-    // }
 
     if (data.type === 'obs_st') {
-      // console.log(data);
-      this.parseTempestData(data);
-      // st_tm = this.tempest_data(data, st_tm);
+      this.setTempestData(data);
     }
 
-    // if (data.type === 'obs_sky') {
-    //   console.log(data);
-    //   // sky_tm = this.sky_data(data, sky_tm);
-    // }
   }
 
-  private parseTempestData(data: any): SocketObservation {
+  private setTempestData(data: any): void {
+
     const obs = data.obs[0];
-    const windLull = (obs[1] !== null) ? obs[1] * 2.2369 : 0;
+    // const windLull = (obs[1] !== null) ? obs[1] * 2.2369 : 0;
     const windSpeed = (obs[2] !== null) ? obs[2] * 2.2369 : 0;
     const windGust = (obs[3] !== null) ? obs[3] * 2.2369 : 0;
-    return {
-      timestamp: obs[0],
-      windLull: windLull,
-      windSpeed: windSpeed,
-      windGust: windGust,
-      windDirection: obs[4],
-      pressure: obs[6],
-      temperature: obs[7],
-      humidity: obs[8],
-      illumination: obs[9],
-      uvIndex: obs[10],
-      solarRadiation: obs[11],
-      rain: parseFloat(obs[12]),
-      strikes: obs[14],
-      lightningDistance: obs[15],
-      reportingInterval: obs[17],
-    } as SocketObservation;
+    this.data = {
+      air_temperature: obs[7],
+      feels_like: obs[7],
+      wind_chill: obs[7],
+      dew_point: obs[7] - ((100 - obs[8]) / 5.0), // Td = T - ((100 - RH)/5.)
+      relative_humidity: obs[8],
+      wind_avg: windSpeed,
+      wind_gust: windGust,
+      barometric_pressure: obs[6],
+      precip: obs[12],
+      precip_accum_local_day: obs[12],
+      wind_direction: obs[4],
+      solar_radiation: obs[11],
+      uv: obs[10],
+      brightness: obs[9],
+    };
+    this.tempest_battery_level = Math.round((obs[16] - 1.8) * 100); // 2.80V = 100%, 1.80V = 0%
 
   }
 
-  private setupSignalHandlers() {
+  private setupSignalHandlers(): void {
 
     process.on('SIGTERM', () => {
       this.log.info('Got SIGTERM, shutting down Tempest Homebridge...');
+      this.s.close();
     });
 
     process.on('SIGINT', () => {
@@ -137,6 +125,18 @@ export class TempestSocket {
       this.s.close();
     });
 
+  }
+
+  public hasData(): boolean {
+    return this.data !== undefined;
+  }
+
+  public getStationCurrentObservation(): Observation {
+    return this.data as Observation;
+  }
+
+  public getBatteryLevel(): number {
+    return this.tempest_battery_level;
   }
 
 }
@@ -164,44 +164,34 @@ export class TempestApi {
 
   }
 
-  private async getStationObservation() {
+  private async getStationObservation(): Promise<AxiosResponse | undefined> {
 
-    try {
-      const url = `https://swd.weatherflow.com/swd/rest/observations/station/${this.station_id}`;
-      const options = {
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
-        },
-        validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
-      };
-      return await axios.get(url, options);
-    } catch(exception) {
-      this.log.debug(`[WeatherFlow] ${exception}`);
-      return;
-    }
+    let observation: AxiosResponse | undefined;
+
+    const url = `https://swd.weatherflow.com/swd/rest/observations/station/${this.station_id}`;
+    const options = {
+      headers: {
+        'Authorization': `Bearer ${this.token}`,
+      },
+      validateStatus: (status: number) => status >= 200 && status < 300, // Default
+    };
+
+    await axios.get(url, options)
+      .then(response => {
+        observation = response.data['obs'][0];
+      })
+
+      .catch(exception => {
+        this.log.warn(`[WeatherFlow] ${exception}`);
+      });
+
+    return observation;
 
   }
 
   private async delay(ms: number): Promise<unknown> {
 
     return new Promise(resolve => setTimeout(resolve, ms));
-
-  }
-
-  private isResponseGood(response: AxiosResponse): boolean {
-
-    try {
-      if (!response || !response.data) {
-        return false;
-      } else if (typeof response.data === 'string') {
-        return ('obs' in JSON.parse(response.data));
-      } else {
-        return ('obs' in response.data);
-      }
-    } catch(exception) {
-      this.log.error(exception as string);
-      return false;
-    }
 
   }
 
@@ -212,23 +202,27 @@ export class TempestApi {
       return;
     }
 
-    const response = await this.getStationObservation();
-    if (!response || !this.isResponseGood(response)) {
+    const observation = await this.getStationObservation();
+
+    if (observation === undefined) {
       this.log.warn('Response missing "obs" data.');
+
       if (this.data !== undefined) {
         this.log.warn('Returning last cached response.');
         return this.data;
+
+      } else {
+        this.log.warn(`Retrying ${retry_count + 1} of ${this.max_retries}. No cached "obs" data.`);
+        retry_count += 1;
+        await this.delay(1000 * retry_count);
+        return this.getStationCurrentObservation(retry_count);
       }
-      this.log.warn(`Retrying ${retry_count + 1} of ${this.max_retries}. No cached "obs" data.`);
-      retry_count += 1;
-      await this.delay(1000 * retry_count);
-      return await this.getStationCurrentObservation(retry_count);
+
     } else {
-      if (typeof response.data === 'string') {
-        response.data = JSON.parse(response.data);
-      }
-      this.data = response.data['obs'][0];
+
+      this.data = observation;
       return this.data;
+
     }
 
   }
@@ -240,7 +234,7 @@ export class TempestApi {
       headers: {
         'Authorization': `Bearer ${this.token}`,
       },
-      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
+      validateStatus: (status: number) => status >= 200 && status < 300, // Default
     };
 
     await axios.get(url, options) // assumes single Tempest station
@@ -250,7 +244,7 @@ export class TempestApi {
       })
 
       .catch(exception => {
-        this.log.debug(`[WeatherFlow] ${exception}`);
+        this.log.warn(`[WeatherFlow] ${exception}`);
       });
 
     return this.tempest_battery_level;
@@ -264,7 +258,7 @@ export class TempestApi {
       headers: {
         'Authorization': `Bearer ${this.token}`,
       },
-      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
+      validateStatus: (status: number) => status >= 200 && status < 300, // Default
     };
 
     await axios.get(url, options) // assumes single hub with single Tempest station
@@ -273,8 +267,9 @@ export class TempestApi {
       })
 
       .catch(exception => {
-        this.log.debug(`[WeatherFlow] ${exception}`);
+        this.log.warn(`[WeatherFlow] ${exception}`);
       });
+
     return this.tempest_device_id;
 
   }
