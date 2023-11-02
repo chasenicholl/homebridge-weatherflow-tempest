@@ -61,15 +61,13 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     this.tempest_battery_level = 0;
     this.tempest_device_id = 0;
 
-    if (this.config.local_api === false) {
-      // Make sure the Station ID is the integer ID
-      if (isNaN(this.config.station_id)) {
-        log.warn(
-          'Station ID is not an Integer! Please make sure you are using the ID integer found here: ' +
-          'https://tempestwx.com/station/<STATION_ID>/',
-        );
-        return;
-      }
+    // Make sure the Station ID is the integer ID
+    if (this.config.local_api === false && isNaN(this.config.station_id)) {
+      log.warn(
+        'Station ID is not an Integer! Please make sure you are using the ID integer found here: ' +
+        'https://tempestwx.com/station/<STATION_ID>/',
+      );
+      return;
     }
 
     this.api.on('didFinishLaunching', () => {
@@ -92,20 +90,15 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
   }
 
-  private initializeBySocket() {
+  private async initializeBySocket() {
 
     try {
       this.log.info('Using Tempest Local API.');
       this.tempestSocket = new TempestSocket(this.log);
       this.tempestSocket.start();
-      // Hold thread for first message.
-      this.log.info('Waiting for first local broadcast. This could take up to 60 seconds...');
-      while (!this.tempestSocket.hasData()) {
-        continue;
-      }
-      this.log.info('Local broadcast recieved.');
 
-      // Set values
+      // Hold thread for first message and set values
+      await this.socketDataRecieved();
       this.observation_data = this.tempestSocket.getStationCurrentObservation();
       this.tempest_battery_level = this.tempestSocket.getBatteryLevel();
 
@@ -116,9 +109,28 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       // Poll every minute for local API
       this.pollLocalStationCurrentObservation();
 
+
     } catch(exception) {
       this.log.error(exception as string);
     }
+  }
+
+  private socketDataRecieved(): Promise<void> {
+
+    this.log.info('Waiting for first local broadcast. This could take up to 60 seconds...');
+    return new Promise((resolve) => {
+      const socket_interval = setInterval(() => {
+        if (this.tempestSocket === undefined) {
+          return;
+        }
+        if (this.tempestSocket.hasData()) {
+          clearInterval(socket_interval);
+          this.log.info('Initial local broadcast recieved.');
+          resolve();
+        }
+      }, 1000);
+    });
+
   }
 
   private initializeByApi() {

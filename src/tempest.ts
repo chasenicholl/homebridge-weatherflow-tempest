@@ -79,7 +79,7 @@ export class TempestSocket {
 
   }
 
-  private processReceivedData(data: any) {
+  private processReceivedData(data) {
 
     if (data.type === 'obs_st') {
       this.setTempestData(data);
@@ -87,7 +87,7 @@ export class TempestSocket {
 
   }
 
-  private setTempestData(data: any): void {
+  private setTempestData(data): void {
 
     const obs = data.obs[0];
     // const windLull = (obs[1] !== null) ? obs[1] * 2.2369 : 0;
