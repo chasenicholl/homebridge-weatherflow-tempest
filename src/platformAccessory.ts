@@ -302,16 +302,27 @@ class Fan {
     try {
       const value_key: string = this.accessory.context.device.fan_properties.value_key;
       let speed: number = parseFloat(this.platform.observation_data[value_key]);
-      speed = Math.round(speed * 2.236936); // convert m/s to mph and round as fan % is integer value
-      if (speed > 100) {
-        this.platform.log.debug(`WeatherFlow Tempest is reporting wind speed exceeding 100mph: ${speed}mph`);
-        return 100;
-      } else if (speed < 0) {
-        this.platform.log.debug(`WeatherFlow Tempest is reporting wind speed less than 0mph: ${speed}mph`);
-        return 0;
+      if (this.platform.config.units === 'Metric') {
+        speed = Math.round(speed); // round as fan % is integer value
+        if (speed > 45) {
+          this.platform.log.debug(`WeatherFlow Tempest is reporting wind speed exceeding 45 m/s: ${speed} m/s`);
+          speed = 45;
+        } else if (speed < 0) {
+          this.platform.log.debug(`WeatherFlow Tempest is reporting wind speed less than 0 m/s: ${speed} m/s`);
+          speed = 0;
+        }
       } else {
-        return speed;
+        speed = Math.round(speed * 2.236936); // convert m/s to mph and round as fan % is integer value
+        if (speed > 100) {
+          this.platform.log.debug(`WeatherFlow Tempest is reporting wind speed exceeding 100 mph: ${speed} mph`);
+          speed = 100;
+        } else if (speed < 0) {
+          this.platform.log.debug(`WeatherFlow Tempest is reporting wind speed less than 0 mph: ${speed} mph`);
+          speed = 0;
+        }
       }
+      return speed;
+
     } catch(exception) {
       this.platform.log.error(exception as string);
       return 0;

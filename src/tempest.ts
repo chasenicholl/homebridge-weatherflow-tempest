@@ -1,9 +1,12 @@
 import { Logger } from 'homebridge';
 import axios, { AxiosResponse } from 'axios';
+import * as dgram from 'dgram';
 import https from 'https';
+
 
 axios.defaults.timeout = 10000; // same as default interval
 axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
+
 
 export interface Observation {
   // temperature sensors
@@ -28,6 +31,125 @@ export interface Observation {
   uv: number;                      // Index
 
   brightness: number;              // Lux
+}
+
+
+export class TempestSocket {
+
+  private log: Logger;
+  private s: dgram.Socket;
+  private data: object | undefined;
+  private tempest_battery_level: number;
+
+  constructor(log: Logger) {
+
+    this.log = log;
+    this.data = undefined;
+    this.tempest_battery_level = 0;
+    this.s = dgram.createSocket('udp4');
+
+    this.log.info('TempestSocket initialized.');
+
+  }
+
+  public start(address = '0.0.0.0', port = 50222) {
+
+    this.setupSocket(address, port);
+    this.setupSignalHandlers();
+
+  }
+
+  private setupSocket(address: string, port: number) {
+
+    this.s.bind({ address: address, port: port });
+    this.s.on('message', (msg) => {
+      try {
+        const message_string = msg.toString('utf-8');
+        const data = JSON.parse(message_string);
+        this.processReceivedData(data);
+      } catch (error) {
+        this.log.warn('JSON processing of data failed');
+        this.log.error(error as string);
+      }
+    });
+
+    this.s.on('error', (err) => {
+      this.log.error('Socket error:', err);
+    });
+
+  }
+
+  private processReceivedData(data) {
+
+    if (data.type === 'obs_st') { // for Tempest
+      this.setTempestData(data);
+    }
+
+  }
+
+  private setTempestData(data): void {
+
+    const obs = data.obs[0];
+    // const windLull = (obs[1] !== null) ? obs[1] : 0;
+    const windSpeed = (obs[2] !== null) ? obs[2] * 2.2369 : 0; // convert to mph for heatindex calculation
+    // const windGust = (obs[3] !== null) ? Math.round(obs[3] * 2.236936) : 0; // convert to mph
+    const T = (obs[7] * 9/5) + 32; // T in F for heatindex, feelsLike and windChill calculations
+
+    // eslint-disable-next-line max-len
+    const heatIndex = -42.379 + 2.04901523*T + 10.14333127*obs[8] - 0.22475541*T*obs[8] - 0.00683783*(T**2) - 0.05481717*(obs[8]**2) + 0.00122874*(T**2)*obs[8] + 0.00085282*T*(obs[8]**2) - 0.00000199*(T**2)*(obs[8]**2);
+
+    // feels like temperature on defined for temperatures between 80F and 110F
+    const feelsLike = ((T >= 80) && (T <= 110)) ? heatIndex : T;
+
+    // windChill only defined for wind speeds > 3 mph and temperature < 50F
+    const windChill = ((windSpeed > 3) && (T < 50)) ? (35.74 + 0.6215*T - 35.75*(windSpeed**0.16) + 0.4275*T*(windSpeed**0.16)) : T;
+
+    this.data = {
+      air_temperature: obs[7],
+      feels_like: 5/9 * (feelsLike - 32), // convert back to C
+      wind_chill: 5/9 * (windChill - 32), // convert back to C
+      dew_point: obs[7] - ((100 - obs[8]) / 5.0), // Td = T - ((100 - RH)/5)
+      relative_humidity: obs[8],
+      wind_avg: obs[2],
+      wind_gust: obs[3],
+      barometric_pressure: obs[6],
+      precip: obs[12],
+      precip_accum_local_day: obs[12],
+      wind_direction: obs[4],
+      solar_radiation: obs[11],
+      uv: obs[10],
+      brightness: obs[9],
+    };
+    this.tempest_battery_level = Math.round((obs[16] - 1.8) * 100); // 2.80V = 100%, 1.80V = 0%
+
+  }
+
+  private setupSignalHandlers(): void {
+
+    process.on('SIGTERM', () => {
+      this.log.info('Got SIGTERM, shutting down Tempest Homebridge...');
+      this.s.close();
+    });
+
+    process.on('SIGINT', () => {
+      this.log.info('Got SIGINT, shutting down Tempest Homebridge...');
+      this.s.close();
+    });
+
+  }
+
+  public hasData(): boolean {
+    return this.data !== undefined;
+  }
+
+  public getStationCurrentObservation(): Observation {
+    return this.data as Observation;
+  }
+
+  public getBatteryLevel(): number {
+    return this.tempest_battery_level;
+  }
+
 }
 
 export class TempestApi {
