@@ -181,7 +181,7 @@
                                       "uv"
                                   ],
                                   "condition": {
-                                      "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Temperature Sensor') { return true; } else { return false; };"
+                                      "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Occupancy Sensor') { return true; } else { return false; };"
                                   }
                               },
                               "trigger_value": {
