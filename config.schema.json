@@ -150,10 +150,7 @@
                                   "type": "string",
                                   "enum": [
                                       "wind_gust"
-                                  ],
-                                  "condition": {
-                                      "functionBody": "if (!model.local_api && model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Temperature Sensor') { return true; } else { return false; };"
-                                  }
+                                  ]
                               },
                               "trigger_value": {
                                   "type": "number",
@@ -180,9 +177,6 @@
                                       "solar_radiation",
                                       "uv"
                                   ],
-                                  "condition": {
-                                      "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Occupancy Sensor') { return true; } else { return false; };"
-                                    },
                                   "description": "Note: `precip_accum_local_day` not supported when using Local API."
                                 },
                               "trigger_value": {
