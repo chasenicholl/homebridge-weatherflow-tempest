@@ -1,4 +1,4 @@
-import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
+import { API, APIEvent, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { WeatherFlowTempestPlatformAccessory } from './platformAccessory';
@@ -70,7 +70,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       return;
     }
 
-    this.api.on('didFinishLaunching', () => {
+    api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
 
       log.info('Executed didFinishLaunching callback');
 
@@ -92,6 +92,8 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
   private async initializeBySocket() {
 
+    this.log.info('Initializing by Socket');
+
     try {
       this.log.info('Using Tempest Local API.');
       this.tempestSocket = new TempestSocket(this.log);
@@ -104,7 +106,11 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
       // Initialize sensors after first API response.
       this.discoverDevices();
-      this.log.debug ('discoverDevices completed');
+      this.log.info ('discoverDevices completed');
+
+      // Remove cached sensors that are no longer required.
+      this.removeDevices();
+      this.log.info ('removeDevices completed');
 
       // Poll every minute for local API
       this.pollLocalStationCurrentObservation();
@@ -135,6 +141,8 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
   private initializeByApi() {
 
+    this.log.info('Initializing by API');
+
     try {
       this.log.info('Using Tempest RESTful API.');
       this.tempestApi = new TempestApi(this.config.token, this.config.station_id, this.log);
@@ -154,11 +162,11 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
         // Initialize sensors after first API response.
         this.discoverDevices();
-        this.log.debug ('discoverDevices completed');
+        this.log.info ('discoverDevices completed');
 
         // Remove cached sensors that are no longer required.
         this.removeDevices();
-        this.log.debug ('removeDevices completed');
+        this.log.info ('removeDevices completed');
 
         // Determine Tempest device_id & initial battery level
         this.tempestApi.getTempestDeviceId().then( (device_id: number) => {
@@ -309,6 +317,9 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
         break;
       case 'Occupancy Sensor':
         value_key = device.occupancy_properties['value_key'];
+        if((this.config.local_api === true) && (value_key === 'precip_accum_local_day')) {
+          value_key = 'not_available';
+        }
         break;
       default:
         this.log.warn('device.sensor_type not defined');
@@ -318,36 +329,39 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       `${device.name}-${device.sensor_type}-${value_key}`,
     );
 
-    const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+    if (value_key !== 'not_available') {
 
-    if (existingAccessory) {
-      this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+      const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
 
-      // pick up any changes such as 'trigger_value'
-      existingAccessory.context.device = device;
+      if (existingAccessory) {
+        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
 
-      // update accessory context information
-      this.api.updatePlatformAccessories(this.accessories);
+        // pick up any changes such as 'trigger_value'
+        existingAccessory.context.device = device;
 
-      new WeatherFlowTempestPlatformAccessory(this, existingAccessory);
+        // update accessory context information
+        this.api.updatePlatformAccessories(this.accessories);
 
-      // add to array of active accessories
-      this.activeAccessory.push(existingAccessory);
+        new WeatherFlowTempestPlatformAccessory(this, existingAccessory);
 
-    } else {
-      this.log.info('Adding new accessory:', device.name);
-      const accessory = new this.api.platformAccessory(device.name, uuid);
+        // add to array of active accessories
+        this.activeAccessory.push(existingAccessory);
 
-      // initialize context information
-      accessory.context.device = device;
+      } else {
+        this.log.info('Adding new accessory:', device.name);
+        const accessory = new this.api.platformAccessory(device.name, uuid);
 
-      new WeatherFlowTempestPlatformAccessory(this, accessory);
+        // initialize context information
+        accessory.context.device = device;
 
-      // link the accessory to the platform
-      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+        new WeatherFlowTempestPlatformAccessory(this, accessory);
 
-      // add to array of active accessories
-      this.activeAccessory.push(accessory);
+        // link the accessory to the platform
+        this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+
+        // add to array of active accessories
+        this.activeAccessory.push(accessory);
+      }
     }
   }
 
