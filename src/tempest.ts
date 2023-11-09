@@ -92,7 +92,6 @@ export class TempestSocket {
     const obs = data.obs[0];
     // const windLull = (obs[1] !== null) ? obs[1] : 0;
     const windSpeed = (obs[2] !== null) ? obs[2] * 2.2369 : 0; // convert to mph for heatindex calculation
-    // const windGust = (obs[3] !== null) ? Math.round(obs[3] * 2.236936) : 0; // convert to mph
     const T = (obs[7] * 9/5) + 32; // T in F for heatindex, feelsLike and windChill calculations
 
     // eslint-disable-next-line max-len
