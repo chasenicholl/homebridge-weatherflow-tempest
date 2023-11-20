@@ -70,7 +70,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       return;
     }
 
-    api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
+    this.api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
 
       log.info('Executed didFinishLaunching callback');
 

@@ -96,6 +96,7 @@
                           "type": "object",
                           "condition": {
                             "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Light Sensor') { return true; } else { return false; };"
+
                           },
                           "properties": {
                               "value_key": {
