@@ -61,7 +61,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
 `Motion Sensor` | wind_gust | m/s | mi/hr | motion_trigger_value | 5 | 10 |
 `Occupancy Sensor {3}{4}` | barometric_pressure | mb | inHg | occupancy_trigger_value | 1000 | 30 |
 ` ` | precip | mm/min | in/hr | occupancy_trigger_value | 0.1 | 0.25 |
-` ` | precip_accum_local_day | mm | in | occupancy_trigger_value | 25 | 1 |
+` ` | precip_accum_local_day | mm | in | occupancy_trigger_value | 25 | 1 | **Not available with Local API**
 ` ` | solar_radiation | W/m^2 | W/m^2 | occupancy_trigger_value | 1000| 1000 |
 ` ` | uv | Index | Index | occupancy_trigger_value | 3 | 3 |
 ` ` | wind_direction | degrees | degrees | occupancy_trigger_value | 360 | 360 |
@@ -82,24 +82,37 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
   "sensors": [
       {
           "name": "Temperature",
-          "sensor_type": "Temperature Sensor"
+          "sensor_type": "Temperature Sensor",
+          "temperature_properties": {
+              "value_key": "air_temperature"
+          }
       },
       {
           "name": "Relative Humidity",
-          "sensor_type": "Humidity Sensor"
+          "sensor_type": "Humidity Sensor",
+          "humidity_properties": {
+              "value_key": "relative_humidity"
+          }
       },
       {
           "name": "Light Level",
-          "sensor_type": "Light Sensor"
+          "sensor_type": "Light Sensor",
+          "light_properties": {
+              "value_key": "brightness"
+          }
       },
       {
           "name": "Wind Speed",
-          "sensor_type": "Fan"
+          "sensor_type": "Fan",
+          "fan_properties": {
+              "value_key": "wind_avg"
+          }
       },
       {
           "name": "Wind Gust",
           "sensor_type": "Motion Sensor",
           "motion_properties": {
+              "value_key": "wind_gust",
               "trigger_value": 10
           }
       },
@@ -107,6 +120,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
           "name": "Barometer",
           "sensor_type": "Occupancy Sensor",
           "occupancy_properties": {
+              "value_key": "barometric_pressure",
               "trigger_value": 30
           }
       },
@@ -114,6 +128,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
           "name": "Solar Radiation",
           "sensor_type": "Occupancy Sensor",
           "occupancy_properties": {
+              "value_key": "solar_radiation",
               "trigger_value": 1000
           }
       },
@@ -121,6 +136,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
           "name": "UV",
           "sensor_type": "Occupancy Sensor",
           "occupancy_properties": {
+              "value_key": "uv",
               "trigger_value": 3
           }
       },
@@ -128,6 +144,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
           "name": "Precipitation Rate",
           "sensor_type": "Occupancy Sensor",
           "occupancy_properties": {
+              "value_key": "precip",
               "trigger_value": 0.25
           }
       },
@@ -135,6 +152,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
           "name": "Precipitation Today",
           "sensor_type": "Occupancy Sensor",
           "occupancy_properties": {
+              "value_key": "precip_accum_local_day",
               "trigger_value": 1
           }
       },
@@ -142,6 +160,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
           "name": "Wind Direction",
           "sensor_type": "Occupancy Sensor",
           "occupancy_properties": {
+              "value_key": "wind_direction",
               "trigger_value": 360
           }
       }

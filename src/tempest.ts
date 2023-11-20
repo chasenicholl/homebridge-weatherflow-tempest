@@ -81,7 +81,7 @@ export class TempestSocket {
 
   private processReceivedData(data) {
 
-    if (data.type === 'obs_st') {
+    if (data.type === 'obs_st') { // for Tempest
       this.setTempestData(data);
     }
 
@@ -90,17 +90,27 @@ export class TempestSocket {
   private setTempestData(data): void {
 
     const obs = data.obs[0];
-    // const windLull = (obs[1] !== null) ? obs[1] * 2.2369 : 0;
-    const windSpeed = (obs[2] !== null) ? obs[2] * 2.2369 : 0;
-    const windGust = (obs[3] !== null) ? obs[3] * 2.2369 : 0;
+    // const windLull = (obs[1] !== null) ? obs[1] : 0;
+    const windSpeed = (obs[2] !== null) ? obs[2] * 2.2369 : 0; // convert to mph for heatindex calculation
+    const T = (obs[7] * 9/5) + 32; // T in F for heatindex, feelsLike and windChill calculations
+
+    // eslint-disable-next-line max-len
+    const heatIndex = -42.379 + 2.04901523*T + 10.14333127*obs[8] - 0.22475541*T*obs[8] - 0.00683783*(T**2) - 0.05481717*(obs[8]**2) + 0.00122874*(T**2)*obs[8] + 0.00085282*T*(obs[8]**2) - 0.00000199*(T**2)*(obs[8]**2);
+
+    // feels like temperature on defined for temperatures between 80F and 110F
+    const feelsLike = ((T >= 80) && (T <= 110)) ? heatIndex : T;
+
+    // windChill only defined for wind speeds > 3 mph and temperature < 50F
+    const windChill = ((windSpeed > 3) && (T < 50)) ? (35.74 + 0.6215*T - 35.75*(windSpeed**0.16) + 0.4275*T*(windSpeed**0.16)) : T;
+
     this.data = {
       air_temperature: obs[7],
-      feels_like: obs[7],
-      wind_chill: obs[7],
-      dew_point: obs[7] - ((100 - obs[8]) / 5.0), // Td = T - ((100 - RH)/5.)
+      feels_like: 5/9 * (feelsLike - 32), // convert back to C
+      wind_chill: 5/9 * (windChill - 32), // convert back to C
+      dew_point: obs[7] - ((100 - obs[8]) / 5.0), // Td = T - ((100 - RH)/5)
       relative_humidity: obs[8],
-      wind_avg: windSpeed,
-      wind_gust: windGust,
+      wind_avg: obs[2],
+      wind_gust: obs[3],
       barometric_pressure: obs[6],
       precip: obs[12],
       precip_accum_local_day: obs[12],

@@ -80,7 +80,7 @@
                           "title": "Fan Properties",
                           "type": "object",
                           "condition": {
-                            "functionBody": "if (!model.local_api && model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Fan') { return true; } else { return false; };"
+                            "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Fan') { return true; } else { return false; };"
                           },
                           "properties": {
                               "value_key": {
@@ -95,7 +95,8 @@
                           "title": "Light Properties",
                           "type": "object",
                           "condition": {
-                            "functionBody": "if (!model.local_api && model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Light Sensor') { return true; } else { return false; };"
+                            "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Light Sensor') { return true; } else { return false; };"
+
                           },
                           "properties": {
                               "value_key": {
@@ -110,7 +111,7 @@
                           "title": "Humidity Properties",
                           "type": "object",
                           "condition": {
-                            "functionBody": "if (!model.local_api && model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Humidity Sensor') { return true; } else { return false; };"
+                            "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Humidity Sensor') { return true; } else { return false; };"
                           },
                           "properties": {
                               "value_key": {
@@ -125,7 +126,7 @@
                           "title": "Temperature Properties",
                           "type": "object",
                           "condition": {
-                            "functionBody": "if (!model.local_api && model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Temperature Sensor') { return true; } else { return false; };"
+                            "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Temperature Sensor') { return true; } else { return false; };"
                           },
                           "properties": {
                               "value_key": {
@@ -150,10 +151,7 @@
                                   "type": "string",
                                   "enum": [
                                       "wind_gust"
-                                  ],
-                                  "condition": {
-                                      "functionBody": "if (!model.local_api && model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Temperature Sensor') { return true; } else { return false; };"
-                                  }
+                                  ]
                               },
                               "trigger_value": {
                                   "type": "number",
@@ -180,10 +178,8 @@
                                       "solar_radiation",
                                       "uv"
                                   ],
-                                  "condition": {
-                                      "functionBody": "if (!model.local_api && model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Temperature Sensor') { return true; } else { return false; };"
-                                  }
-                              },
+                                  "description": "Note: `precip_accum_local_day` not supported when using Local API."
+                                },
                               "trigger_value": {
                                   "type": "number",
                                   "minimum": 0,
