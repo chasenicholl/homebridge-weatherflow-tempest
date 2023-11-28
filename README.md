@@ -9,6 +9,8 @@
 </tr>
 </table>
 
+*New* in v4.0.0 Local API Support!
+
 Homebridge Plugin providing basic WeatherFlow Tempest support. Exposing 7 Acessories.
 
 - Temperature Sensor
@@ -31,12 +33,13 @@ It is recommended when upgrading to v3.0 of the plugin from a prior version that
 
 ### Setup and Parameters
 
-You will need to create an account at https://tempestwx.com/ and then generate a Personal Use Token https://tempestwx.com/settings/tokens.
+Local API is now supported which requires no authentication. If you choose to use the non-local HTTP API you will need to create an account at https://tempestwx.com/ and then generate a Personal Use Token https://tempestwx.com/settings/tokens.
 
 - `name`: _(Required)_ Must always be set to `WeatherFlow Tempest Platform`.
-- `token`: _(Required)_ Oauth2 Personal Use Token, create via your tempestwx account.
-- `station_id`: _(Required)_ The station ID you are pulling weather data from.
-- `interval`: _(Required)_ How often to poll the Tempest REST API. Default 10 seconds. Minimum every second.
+- `local_api`: _(Required)_ Use the Local API versus HTTP API.
+- `token`: _(Required for HTTP API)_ Oauth2 Personal Use Token, create via your tempestwx account.
+- `station_id`: _(Required for HTTP API)_ The station ID you are pulling weather data from.
+- `interval`: _(Required for HTTP API)_ How often to poll the Tempest REST API. Default 10 seconds. Minimum every second.
 - `sensors`: _(Required)_ An array of sensors to create. This is dynamic incase you want to target different temperature or wind speed attributes.
 - `sensors[].name`: _(Required)_ Display name of Sensor in Apple Home.
 - `sensors[].sensor_type`: _(Required)_ The type of Home Sensor to create. There are 6 options ["Temperature Sensor", "Light Sensor", "Humidity Sensor", "Fan", "Motion Sensor", "Occupancy Sensor"].
@@ -58,7 +61,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
 `Motion Sensor` | wind_gust | m/s | mi/hr | motion_trigger_value | 5 | 10 |
 `Occupancy Sensor {3}{4}` | barometric_pressure | mb | inHg | occupancy_trigger_value | 1000 | 30 |
 ` ` | precip | mm/min | in/hr | occupancy_trigger_value | 0.1 | 0.25 |
-` ` | precip_accum_local_day | mm | in | occupancy_trigger_value | 25 | 1 |
+` ` | precip_accum_local_day | mm | in | occupancy_trigger_value | 25 | 1 | **Not available with Local API**
 ` ` | solar_radiation | W/m^2 | W/m^2 | occupancy_trigger_value | 1000| 1000 |
 ` ` | uv | Index | Index | occupancy_trigger_value | 3 | 3 |
 ` ` | wind_direction | degrees | degrees | occupancy_trigger_value | 360 | 360 |
@@ -69,11 +72,109 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
 
 `{4}` <b><u>NOTE:</u></b> There is a current limitation with v3.0.0 of the plug-in in that HomeKit accessory names are set when the accessory is <u>initially</u> added and cannot be dynamically updated. The accessories are correctly displayed and updated in the Homebridge "Accessories" tab of the webpage interface. Occupancy sensors `trigger_value` status is correctly displayed in both HomeKit and Homebridge.
 
-### Config Example
+### Local API Config Example
 
 ```json
 {
   "name": "WeatherFlow Tempest Platform",
+  "local_api": true,
+  "units": "Standard",
+  "sensors": [
+      {
+          "name": "Temperature",
+          "sensor_type": "Temperature Sensor",
+          "temperature_properties": {
+              "value_key": "air_temperature"
+          }
+      },
+      {
+          "name": "Relative Humidity",
+          "sensor_type": "Humidity Sensor",
+          "humidity_properties": {
+              "value_key": "relative_humidity"
+          }
+      },
+      {
+          "name": "Light Level",
+          "sensor_type": "Light Sensor",
+          "light_properties": {
+              "value_key": "brightness"
+          }
+      },
+      {
+          "name": "Wind Speed",
+          "sensor_type": "Fan",
+          "fan_properties": {
+              "value_key": "wind_avg"
+          }
+      },
+      {
+          "name": "Wind Gust",
+          "sensor_type": "Motion Sensor",
+          "motion_properties": {
+              "value_key": "wind_gust",
+              "trigger_value": 10
+          }
+      },
+      {
+          "name": "Barometer",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "value_key": "barometric_pressure",
+              "trigger_value": 30
+          }
+      },
+      {
+          "name": "Solar Radiation",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "value_key": "solar_radiation",
+              "trigger_value": 1000
+          }
+      },
+      {
+          "name": "UV",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "value_key": "uv",
+              "trigger_value": 3
+          }
+      },
+      {
+          "name": "Precipitation Rate",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "value_key": "precip",
+              "trigger_value": 0.25
+          }
+      },
+      {
+          "name": "Precipitation Today",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "value_key": "precip_accum_local_day",
+              "trigger_value": 1
+          }
+      },
+      {
+          "name": "Wind Direction",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "value_key": "wind_direction",
+              "trigger_value": 360
+          }
+      }
+  ],
+  "platform": "WeatherFlowTempest"
+}
+```
+
+### HTTP API Config Example
+
+```json
+{
+  "name": "WeatherFlow Tempest Platform",
+  "local_api": false,
   "token": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
   "station_id": 10000,
   "interval": 10,

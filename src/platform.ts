@@ -1,9 +1,9 @@
-import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
+import { API, APIEvent, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { WeatherFlowTempestPlatformAccessory } from './platformAccessory';
 
-import { TempestApi, Observation } from './tempestApi';
+import { TempestApi, TempestSocket, Observation } from './tempest';
 
 interface TempestSensor {
   name: string;
@@ -24,7 +24,8 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
   public readonly Characteristic: typeof Characteristic = this.api.hap.Characteristic;
 
   public readonly accessories: PlatformAccessory[] = [];
-  private tempestApi: TempestApi;
+  private tempestApi: TempestApi | undefined;
+  private tempestSocket: TempestSocket | undefined;
 
   public observation_data: Observation;  // Observation data for Accessories to use.
   public tempest_battery_level!: number; // Tempest battery level
@@ -40,10 +41,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
     log.info('Finished initializing platform:', this.config.name);
 
-    // Initialize TempestApi
-    this.tempestApi = new TempestApi(this.config.token, this.config.station_id, log);
-
-    // initialize observation_data
+    // Initialize observation_data
     this.observation_data = {
       air_temperature: 0,
       barometric_pressure: 0,
@@ -64,7 +62,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     this.tempest_device_id = 0;
 
     // Make sure the Station ID is the integer ID
-    if (isNaN(this.config.station_id)) {
+    if (this.config.local_api === false && isNaN(this.config.station_id)) {
       log.warn(
         'Station ID is not an Integer! Please make sure you are using the ID integer found here: ' +
         'https://tempestwx.com/station/<STATION_ID>/',
@@ -72,7 +70,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       return;
     }
 
-    this.api.on('didFinishLaunching', () => {
+    this.api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
 
       log.info('Executed didFinishLaunching callback');
 
@@ -81,56 +79,133 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
         return;
       }
 
-      try {
-
-        this.tempestApi.getStationCurrentObservation(0).then( (observation_data: Observation) => {
-
-          if (!observation_data) {
-            log.warn('Failed to fetch initial Station Current Observations after retrying. Refusing to continue.');
-            return;
-          }
-
-          // Cache the observation results
-          this.observation_data = observation_data;
-
-          // Initialize sensors after first API response.
-          this.discoverDevices();
-
-          this.log.debug ('discoverDevices completed');
-
-          // Remove cached sensors that are no longer required.
-          this.removeDevices();
-
-          this.log.debug ('removeDevices completed');
-
-          // Determine Tempest device_id & initial battery level
-          this.tempestApi.getTempestDeviceId().then( (device_id: number) => {
-            this.tempest_device_id = device_id;
-
-            this.tempestApi.getTempestBatteryLevel(this.tempest_device_id).then( (battery_level: number) => {
-
-              if (battery_level === undefined) {
-                this.log.warn('Failed to fetch initial Tempest battery level');
-                return;
-              }
-              this.tempest_battery_level = battery_level;
-
-            });
-
-          });
-
-          // Then begin to poll the station current observations data.
-          this.pollStationCurrentObservation();
-
-        });
-
-      } catch(exception) {
-
-        this.log.error(exception as string);
-
+      // Initialize Tempest Interfaces
+      if (this.config.local_api === true) {
+        this.initializeBySocket();
+      } else {
+        this.initializeByApi();
       }
 
     });
+
+  }
+
+  private async initializeBySocket() {
+
+    this.log.info('Initializing by Socket');
+
+    try {
+      this.log.info('Using Tempest Local API.');
+      this.tempestSocket = new TempestSocket(this.log);
+      this.tempestSocket.start();
+
+      // Hold thread for first message and set values
+      await this.socketDataRecieved();
+      this.observation_data = this.tempestSocket.getStationCurrentObservation();
+      this.tempest_battery_level = this.tempestSocket.getBatteryLevel();
+
+      // Initialize sensors after first API response.
+      this.discoverDevices();
+      this.log.info ('discoverDevices completed');
+
+      // Remove cached sensors that are no longer required.
+      this.removeDevices();
+      this.log.info ('removeDevices completed');
+
+      // Poll every minute for local API
+      this.pollLocalStationCurrentObservation();
+
+
+    } catch(exception) {
+      this.log.error(exception as string);
+    }
+  }
+
+  private socketDataRecieved(): Promise<void> {
+
+    this.log.info('Waiting for first local broadcast. This could take up to 60 seconds...');
+    return new Promise((resolve) => {
+      const socket_interval = setInterval(() => {
+        if (this.tempestSocket === undefined) {
+          return;
+        }
+        if (this.tempestSocket.hasData()) {
+          clearInterval(socket_interval);
+          this.log.info('Initial local broadcast recieved.');
+          resolve();
+        }
+      }, 1000);
+    });
+
+  }
+
+  private initializeByApi() {
+
+    this.log.info('Initializing by API');
+
+    try {
+      this.log.info('Using Tempest RESTful API.');
+      this.tempestApi = new TempestApi(this.config.token, this.config.station_id, this.log);
+      this.tempestApi.getStationCurrentObservation(0).then( (observation_data: Observation) => {
+
+        if (!observation_data) {
+          this.log.warn('Failed to fetch initial Station Current Observations after retrying. Refusing to continue.');
+          return;
+        }
+
+        if (this.tempestApi === undefined) {
+          return;
+        }
+
+        // Cache the observation results
+        this.observation_data = observation_data;
+
+        // Initialize sensors after first API response.
+        this.discoverDevices();
+        this.log.info ('discoverDevices completed');
+
+        // Remove cached sensors that are no longer required.
+        this.removeDevices();
+        this.log.info ('removeDevices completed');
+
+        // Determine Tempest device_id & initial battery level
+        this.tempestApi.getTempestDeviceId().then( (device_id: number) => {
+          this.tempest_device_id = device_id;
+          if (this.tempestApi === undefined) {
+            return;
+          }
+          this.tempestApi.getTempestBatteryLevel(this.tempest_device_id).then( (battery_level: number) => {
+            if (battery_level === undefined) {
+              this.log.warn('Failed to fetch initial Tempest battery level');
+              return;
+            }
+            this.tempest_battery_level = battery_level;
+          });
+        });
+
+        // Then begin to poll the station current observations data.
+        this.pollStationCurrentObservation();
+      });
+
+    } catch(exception) {
+      this.log.error(exception as string);
+    }
+
+  }
+
+  private pollLocalStationCurrentObservation(): void {
+
+    setInterval( async () => {
+
+      if (this.tempestSocket === undefined) {
+        return;
+      }
+
+      // Update values
+      this.observation_data = this.tempestSocket.getStationCurrentObservation();
+      this.tempest_battery_level = this.tempestSocket.getBatteryLevel();
+
+    }, 60 * 1000); // Tempest local API broadcasts every minute.
 
   }
 
@@ -141,6 +216,10 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     this.log.debug(`Tempest API Polling interval (ms) -> ${interval}`);
 
     setInterval( async () => {
+
+      if (this.tempestApi === undefined) {
+        return;
+      }
 
       // Update Observation data
       await this.tempestApi.getStationCurrentObservation(0).then( (observation_data: Observation) => {
@@ -238,6 +317,9 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
         break;
       case 'Occupancy Sensor':
         value_key = device.occupancy_properties['value_key'];
+        if((this.config.local_api === true) && (value_key === 'precip_accum_local_day')) {
+          value_key = 'not_available';
+        }
         break;
       default:
         this.log.warn('device.sensor_type not defined');
@@ -247,36 +329,39 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       `${device.name}-${device.sensor_type}-${value_key}`,
     );
 
-    const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+    if (value_key !== 'not_available') {
 
-    if (existingAccessory) {
-      this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+      const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
 
-      // pick up any changes such as 'trigger_value'
-      existingAccessory.context.device = device;
+      if (existingAccessory) {
+        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
 
-      // update accessory context information
-      this.api.updatePlatformAccessories(this.accessories);
+        // pick up any changes such as 'trigger_value'
+        existingAccessory.context.device = device;
 
-      new WeatherFlowTempestPlatformAccessory(this, existingAccessory);
+        // update accessory context information
+        this.api.updatePlatformAccessories(this.accessories);
 
-      // add to array of active accessories
-      this.activeAccessory.push(existingAccessory);
+        new WeatherFlowTempestPlatformAccessory(this, existingAccessory);
 
-    } else {
-      this.log.info('Adding new accessory:', device.name);
-      const accessory = new this.api.platformAccessory(device.name, uuid);
+        // add to array of active accessories
+        this.activeAccessory.push(existingAccessory);
 
-      // initialize context information
-      accessory.context.device = device;
+      } else {
+        this.log.info('Adding new accessory:', device.name);
+        const accessory = new this.api.platformAccessory(device.name, uuid);
 
-      new WeatherFlowTempestPlatformAccessory(this, accessory);
+        // initialize context information
+        accessory.context.device = device;
 
-      // link the accessory to the platform
-      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+        new WeatherFlowTempestPlatformAccessory(this, accessory);
 
-      // add to array of active accessories
-      this.activeAccessory.push(accessory);
+        // link the accessory to the platform
+        this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+
+        // add to array of active accessories
+        this.activeAccessory.push(accessory);
+      }
     }
   }
 
