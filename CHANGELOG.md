@@ -3,7 +3,11 @@
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
 ## v4.0.0
-* Added Local UDP API support! Now you can choose to listen to your Weather Stations observations directly over your local network. No Station ID or API Token needed. Observations are broadcasted every 60 seconds. This leverages the `obs_st` message. See [documentation](https://weatherflow.github.io/Tempest/api/udp/v171/) for more information.
+* Added Local UDP API support! Now you can choose to listen to your Weather Stations observations directly over your local network. No Station ID or API Token needed. 
+    * To use the local API add `local_api`: `true` or `false` to your top level configuration. 
+    * Observations are broadcasted every 60 seconds. 
+    * Leverages the `obs_st` message. See [documentation](https://weatherflow.github.io/Tempest/api/udp/v171/) for more information.
+    * `precip_accum_local_day` not available with local API
 
 ## v3.0.3
 * Update node-version: [18.x, 20.x], remove 16.x which is no longer supported by homebridge.
