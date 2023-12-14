@@ -61,7 +61,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
 `Motion Sensor` | wind_gust | m/s | mi/hr | motion_trigger_value | 5 | 10 |
 `Occupancy Sensor {3}{4}` | barometric_pressure | mb | inHg | occupancy_trigger_value | 1000 | 30 |
 ` ` | precip | mm/min | in/hr | occupancy_trigger_value | 0.1 | 0.25 |
-` ` | precip_accum_local_day | mm | in | occupancy_trigger_value | 25 | 1 | not available with Local API
+` ` | precip_accum_local_day | mm | in | occupancy_trigger_value | 25 | 1 | **Not available with Local API**
 ` ` | solar_radiation | W/m^2 | W/m^2 | occupancy_trigger_value | 1000| 1000 |
 ` ` | uv | Index | Index | occupancy_trigger_value | 3 | 3 |
 ` ` | wind_direction | degrees | degrees | occupancy_trigger_value | 360 | 360 |
