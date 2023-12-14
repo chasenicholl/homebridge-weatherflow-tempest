@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v4.0.1
+* Check that `station_id` length is more than one character when initializing plugin in Local API mode.
+* Update axios to v1.6.2 to address moderate severity vulnerability.
+
 ## v4.0.0
 * Added Local UDP API support! Now you can choose to listen to your Weather Stations observations directly over your local network. No Station ID or API Token needed. Observations are broadcasted every 60 seconds. This leverages the `obs_st` message. See [documentation](https://weatherflow.github.io/Tempest/api/udp/v171/) for more information.
 

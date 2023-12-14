@@ -62,12 +62,17 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     this.tempest_device_id = 0;
 
     // Make sure the Station ID is the integer ID
-    if (this.config.local_api === false && isNaN(this.config.station_id)) {
+    if ((this.config.local_api === false) && isNaN(this.config.station_id)) {
       log.warn(
         'Station ID is not an Integer! Please make sure you are using the ID integer found here: ' +
         'https://tempestwx.com/station/<STATION_ID>/',
       );
       return;
+    }
+
+    // For local_api, make sure that station_id is greater than 1 character in length
+    if ((this.config.local_api === true) && (this.config.station_id.toString().length <= 1)) {
+      this.config.station_id = 12345;
     }
 
     api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
