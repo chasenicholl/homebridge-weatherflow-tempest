@@ -33,7 +33,7 @@ It is recommended when upgrading to v3.0 of the plugin from a prior version that
 
 ### Setup and Parameters
 
-You will need to create an account at https://tempestwx.com/ and then generate a Personal Use Token https://tempestwx.com/settings/tokens.
+Local API is now supported which requires no authentication. If you choose to use the non-local HTTP API you will need to create an account at https://tempestwx.com/ and then generate a Personal Use Token https://tempestwx.com/settings/tokens.
 
 - `name`: _(Required)_ Must always be set to `WeatherFlow Tempest Platform`.
 - `local_api`: _(Required)_ Use the Local API versus HTTP API.

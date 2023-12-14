@@ -61,6 +61,12 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
     this.tempest_battery_level = 0;
     this.tempest_device_id = 0;
 
+    // Backwards compatible config check for new local_api variable
+    if (!('local_api' in this.config)) {
+      this.config['local_api'] = false;
+      this.log.info('local_api config parameter not set defaulting to false.');
+    }
+
     // Make sure the Station ID is the integer ID
     if ((this.config.local_api === false) && isNaN(this.config.station_id)) {
       log.warn(
