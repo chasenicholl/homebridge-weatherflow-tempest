@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v4.0.1
+* Check that `station_id` length is more than one character when initializing plugin in Local API mode.
+* Update axios to v1.6.2 to address moderate severity vulnerability.
+
 ## v4.0.0
 * Added Local UDP API support! Now you can choose to listen to your Weather Stations observations directly over your local network. No Station ID or API Token needed. 
     * To use the local API add `local_api`: `true` or `false` to your top level configuration. 
