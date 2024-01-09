@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v4.0.2
+* When using HTTP API, check that `token` and `station_id` are present and have valid characteristics.
+* When Local API is used, `token` and `station_id` are not required and are not validated. 
+* User is able to switch between HTTP API to Local API and back to HTTP API without the need to re-enter `token` and `station_id` as these are retained in the config.sys file.
+
 ## v4.0.1
 * Check that `station_id` length is more than one character when initializing plugin in Local API mode.
 * Update axios to v1.6.2 to address moderate severity vulnerability.

@@ -59,7 +59,6 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       dew_point: 0,
     };
     this.tempest_battery_level = 0;
-    this.tempest_device_id = 0;
 
     // Backwards compatible config check for new local_api variable
     if (!('local_api' in this.config)) {
@@ -67,18 +66,25 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       this.log.info('local_api config parameter not set defaulting to false.');
     }
 
-    // Make sure the Station ID is the integer ID
-    if ((this.config.local_api === false) && isNaN(this.config.station_id)) {
+    // For new install with local_api === true (Local API), token and station_id will be undefined and are not required
+
+    // For local_api === false (HTTP API), make sure token is provided
+    if ((this.config.local_api === false) && (!('token' in this.config) || (this.config.token === '<Your API Token>'))) {
       log.warn(
-        'Station ID is not an Integer! Please make sure you are using the ID integer found here: ' +
-        'https://tempestwx.com/station/<STATION_ID>/',
+        'WeatherFlow token not provided. You will need to create an account at https://tempestwx.com/ ' +
+        'and then generate a Personal Use Token https://tempestwx.com/settings/tokens.',
       );
       return;
     }
 
-    // For local_api, make sure that station_id is greater than 1 character in length
-    if ((this.config.local_api === true) && (this.config.station_id.toString().length <= 1)) {
-      this.config.station_id = 12345;
+    // For local_api === false (HTTP API), make sure Station ID is present and is an integer and is 5 digits in length
+    // eslint-disable-next-line max-len
+    if ((this.config.local_api === false) && (!('station_id' in this.config) || isNaN(this.config.station_id) || (this.config.station_id.toString().length < 5))) {
+      log.warn(
+        'Station ID is not provided, is not an Integer or is less than 5 digits! Please make sure you are using the ID integer ' +
+        'found here: https://tempestwx.com/station/<STATION_ID>/',
+      );
+      return;
     }
 
     api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
