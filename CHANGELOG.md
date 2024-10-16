@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v4.1.0
+* Confirm plug-in operation with Homebridge 2.0.0. Updated package.json per homebridge instructions.
+* Update `config.schema.json` to require `station_id` for both `http_api` and `local_api`. Update associated code in `platform.ts`.
+* Update `@types/node` to "^22.0.0"
+* Update `@typescript-eslint/eslint-plugin` to "^8.0.0"
+* Update `@typescript-eslint/parser` to "^8.0.0"
+* Update `eslint` to "^9.0.0".
+* Update `rimraf` to "^6.0.1"
+* Update `axios` to "1.7.7
+
 ## v4.0.2
 * When using HTTP API, check that `token` and `station_id` are present and have valid characteristics.
 * When Local API is used, `token` and `station_id` are not required and are not validated. 

@@ -27,12 +27,9 @@
               }
           },
           "station_id": {
-              "title": "Station ID (Integer)",
+              "title": "Station ID (Integer of 5 digits)",
               "type": "number",
-              "default": 0,
-              "condition": {
-                "functionBody": "if (model.local_api != undefined && !model.local_api) { return true; } else { return false; };"
-              }
+              "default": 0
           },
           "interval": {
               "title": "Interval (seconds)",
