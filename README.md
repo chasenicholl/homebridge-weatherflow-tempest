@@ -5,7 +5,7 @@
 <table align="center">
 <tr>
 <td><img src="https://user-images.githubusercontent.com/3979615/78016493-9b89a800-7396-11ea-9442-414ad9ffcdf2.png" width="200"></td>
-<td><img src="https://weatherflow.com/wp-content/uploads/2016/05/Tempest-powered-by-01.svg" width="250"></td>
+<td><img src="https://t9s9z3m3.rocketcdn.me/wp-content/uploads/2016/05/Tempest-powered-by-01.svg" width="250"></td>
 </tr>
 </table>
 
@@ -70,7 +70,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
 
 `{3}` Reference Wiki for details on how to view Occupancy Sensor values with iOS 16.x and MacOS Ventura 13.x.
 
-`{4}` <b><u>NOTE:</u></b> There is a current limitation with v3.0.0 of the plug-in in that HomeKit accessory names are set when the accessory is <u>initially</u> added and cannot be dynamically updated. The accessories are correctly displayed and updated in the Homebridge "Accessories" tab of the webpage interface. Occupancy sensors `trigger_value` status is correctly displayed in both HomeKit and Homebridge.
+`{4}` <b><u>NOTE:</u></b> There is a current limitation with v3.0.0 and v4.0.0 of the plug-in in that HomeKit accessory names are set when the accessory is <u>initially</u> added and cannot be dynamically updated. The accessories are correctly displayed and updated in the Homebridge "Accessories" tab of the webpage interface. Occupancy sensors `trigger_value` status is correctly displayed in both HomeKit and Homebridge.
 
 ### Local API Config Example
 
@@ -78,6 +78,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
 {
   "name": "WeatherFlow Tempest Platform",
   "local_api": true,
+  "station_id": 10000,
   "units": "Standard",
   "sensors": [
       {
