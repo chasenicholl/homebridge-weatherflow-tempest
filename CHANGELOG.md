@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. This projec
 
 ## v4.1.1
 * Update README.md to correctly display "Tempest" logo.
-* Correct "Local API Config Example" to include `station_id`. 
+* Update README.md to include `station_id` in "Local API Config Example". 
 
 ## v4.1.0
 * Confirm plug-in operation with Homebridge 2.0.0. Updated package.json per homebridge instructions.
