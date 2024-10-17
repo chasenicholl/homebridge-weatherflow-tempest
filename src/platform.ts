@@ -77,9 +77,8 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       return;
     }
 
-    // For local_api === false (HTTP API), make sure Station ID is present and is an integer and is 5 digits in length
-    // eslint-disable-next-line max-len
-    if ((this.config.local_api === false) && (!('station_id' in this.config) || isNaN(this.config.station_id) || (this.config.station_id.toString().length < 5))) {
+    // Make sure Station ID is present and is an integer and is 5 digits in length
+    if (isNaN(this.config.station_id) || (this.config.station_id.toString().length < 5)) {
       log.warn(
         'Station ID is not provided, is not an Integer or is less than 5 digits! Please make sure you are using the ID integer ' +
         'found here: https://tempestwx.com/station/<STATION_ID>/',
