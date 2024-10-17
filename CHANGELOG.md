@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v4.1.1
+* Update README.md to correctly display "Tempest" logo.
+* Correct "Local API Config Example" to include `station_id`. 
+
 ## v4.1.0
 * Confirm plug-in operation with Homebridge 2.0.0. Updated package.json per homebridge instructions.
 * Update `config.schema.json` to require `station_id` for both `http_api` and `local_api`. Update associated code in `platform.ts`.
