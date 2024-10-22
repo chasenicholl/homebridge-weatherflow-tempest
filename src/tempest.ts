@@ -41,12 +41,12 @@ export class TempestSocket {
   private data: object | undefined;
   private tempest_battery_level: number;
 
-  constructor(log: Logger) {
+  constructor(log: Logger, reuse_address: boolean) {
 
     this.log = log;
     this.data = undefined;
     this.tempest_battery_level = 0;
-    this.s = dgram.createSocket('udp4');
+    this.s = dgram.createSocket({ type: 'udp4', reuseAddr: reuse_address });
 
     this.log.info('TempestSocket initialized.');
 
