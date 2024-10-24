@@ -18,6 +18,12 @@
             "required": true,
             "default": true
           },
+          "local_api_shared": {
+            "title": "Share the Local API UDP port with other processes",
+            "type": "boolean",
+            "required": false,
+            "default": false
+          },
           "token": {
               "title": "Token",
               "type": "string",
