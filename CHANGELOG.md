@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file. This projec
 
 ## v4.1.1
 * Update README.md to correctly display "Tempest" logo.
-* Update README.md to include `station_id` in "Local API Config Example". 
+* Update README.md to include `station_id` in "Local API Config Example".
+* Added _optional_ multicast enablement with dgram socket reuseAddr. 
+* Added new optional configuration `local_api_shared` to support turning on the above.
 
 ## v4.1.0
 * Confirm plug-in operation with Homebridge 2.0.0. Updated package.json per homebridge instructions.
