@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file. This projec
 ## v4.1.1
 * Update README.md to correctly display "Tempest" logo.
 * Update README.md to include `station_id` in "Local API Config Example".
-* Added _optional_ multicast enablement with dgram socket reuseAddr. 
+* Added _optional_ multicast enablement with dgram socket reuseAddr. Will reuse the address, even if another process has already bound a socket on it, but only one socket can receive the data.
 * Added new optional configuration `local_api_shared` to support turning on the above.
 
 ## v4.1.0
