@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v4.1.1
+* Update README.md to correctly display "Tempest" logo.
+* Update README.md to include `station_id` in "Local API Config Example".
+* Added _optional_ multicast enablement with dgram socket reuseAddr. Will reuse the address, even if another process has already bound a socket on it, but only one socket can receive the data.
+* Added new optional configuration `local_api_shared` to support turning on the above.
+
 ## v4.1.0
 * Confirm plug-in operation with Homebridge 2.0.0. Updated package.json per homebridge instructions.
 * Update `config.schema.json` to require `station_id` for both `http_api` and `local_api`. Update associated code in `platform.ts`.

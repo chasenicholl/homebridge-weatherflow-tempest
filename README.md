@@ -5,7 +5,7 @@
 <table align="center">
 <tr>
 <td><img src="https://user-images.githubusercontent.com/3979615/78016493-9b89a800-7396-11ea-9442-414ad9ffcdf2.png" width="200"></td>
-<td><img src="https://weatherflow.com/wp-content/uploads/2016/05/Tempest-powered-by-01.svg" width="250"></td>
+<td><img src="https://t9s9z3m3.rocketcdn.me/wp-content/uploads/2016/05/Tempest-powered-by-01.svg" width="250"></td>
 </tr>
 </table>
 
@@ -40,6 +40,7 @@ Local API is now supported which requires no authentication. If you choose to us
 - `token`: _(Required for HTTP API)_ Oauth2 Personal Use Token, create via your tempestwx account.
 - `station_id`: _(Required for HTTP API)_ The station ID you are pulling weather data from.
 - `interval`: _(Required for HTTP API)_ How often to poll the Tempest REST API. Default 10 seconds. Minimum every second.
+- `local_api_shared`: _(Optional)_ enable multicast. Will reuse the address, even if another process has already bound a socket on it, but only one socket can receive the data. Default: False.
 - `sensors`: _(Required)_ An array of sensors to create. This is dynamic incase you want to target different temperature or wind speed attributes.
 - `sensors[].name`: _(Required)_ Display name of Sensor in Apple Home.
 - `sensors[].sensor_type`: _(Required)_ The type of Home Sensor to create. There are 6 options ["Temperature Sensor", "Light Sensor", "Humidity Sensor", "Fan", "Motion Sensor", "Occupancy Sensor"].
@@ -70,7 +71,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
 
 `{3}` Reference Wiki for details on how to view Occupancy Sensor values with iOS 16.x and MacOS Ventura 13.x.
 
-`{4}` <b><u>NOTE:</u></b> There is a current limitation with v3.0.0 of the plug-in in that HomeKit accessory names are set when the accessory is <u>initially</u> added and cannot be dynamically updated. The accessories are correctly displayed and updated in the Homebridge "Accessories" tab of the webpage interface. Occupancy sensors `trigger_value` status is correctly displayed in both HomeKit and Homebridge.
+`{4}` <b><u>NOTE:</u></b> There is a current limitation with v3.0.0 and v4.0.0 of the plug-in in that HomeKit accessory names are set when the accessory is <u>initially</u> added and cannot be dynamically updated. The accessories are correctly displayed and updated in the Homebridge "Accessories" tab of the webpage interface. Occupancy sensors `trigger_value` status is correctly displayed in both HomeKit and Homebridge.
 
 ### Local API Config Example
 
@@ -78,7 +79,9 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
 {
   "name": "WeatherFlow Tempest Platform",
   "local_api": true,
+  "station_id": 10000,
   "units": "Standard",
+  "local_api_shared": false,
   "sensors": [
       {
           "name": "Temperature",
@@ -179,6 +182,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
   "station_id": 10000,
   "interval": 10,
   "units": "Standard",
+  "local_api_shared": false,
   "sensors": [
       {
           "name": "Temperature",

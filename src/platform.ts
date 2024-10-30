@@ -66,6 +66,12 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       this.log.info('local_api config parameter not set defaulting to false.');
     }
 
+    // Backwards compatible config check for new local_api_shared variable
+    if (!('local_api_shared' in this.config)) {
+      this.config['local_api_shared'] = false;
+      this.log.info('local_api_shared config parameter not set defaulting to false.');
+    }
+
     // For new install with local_api === true (Local API), token and station_id will be undefined and are not required
 
     // For local_api === false (HTTP API), make sure token is provided
@@ -112,7 +118,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
 
     try {
       this.log.info('Using Tempest Local API.');
-      this.tempestSocket = new TempestSocket(this.log);
+      this.tempestSocket = new TempestSocket(this.log, this.config.local_api_shared);
       this.tempestSocket.start();
 
       // Hold thread for first message and set values
