@@ -166,6 +166,14 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
               "value_key": "wind_direction",
               "trigger_value": 360
           }
+      },
+      {
+          "name": "Lightening Detector",
+          "sensor_type": "Occupancy Sensor",
+          "occupancy_properties": {
+              "trigger_distance": 10,
+              "trigger_time": 120
+          }
       }
   ],
   "platform": "WeatherFlowTempest"
@@ -286,8 +294,8 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
           "name": "Lightening Detector",
           "sensor_type": "Occupancy Sensor",
           "occupancy_properties": {
-              "trigger_distance": 10, // KM
-              "trigger_time": 120 // Seconds
+              "trigger_distance": 10,
+              "trigger_time": 120
           }
       }
   ],
