@@ -651,14 +651,10 @@ class ContactSensor {
 
   }
 
-  /**
-   *
-   */
   private handleCurrentStateGet(): number {
 
-    this.platform.log.debug('Triggered GET CurrentRelativeHumidity');
-    const relative_humidity: number = this.getState();
-    return relative_humidity;
+    this.platform.log.debug('Triggered GET handleCurrentStateGet for Contact Sensor state');
+    return this.getState();
 
   }
 
