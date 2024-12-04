@@ -4,8 +4,12 @@
 
 <table align="center">
 <tr>
-<td><img src="https://user-images.githubusercontent.com/3979615/78016493-9b89a800-7396-11ea-9442-414ad9ffcdf2.png" width="200" sytle="border: 0px;"></td>
-<td><img src="https://t9s9z3m3.rocketcdn.me/wp-content/uploads/2016/05/Tempest-powered-by-01.svg" width="250" sytle="border: 0px;></td>
+<td>
+<img src="https://user-images.githubusercontent.com/3979615/78016493-9b89a800-7396-11ea-9442-414ad9ffcdf2.png" width="200" sytle="border: 0px;">
+</td>
+<td>
+<img src="https://t9s9z3m3.rocketcdn.me/wp-content/uploads/2016/05/Tempest-powered-by-01.svg" width="250" sytle="border: 0px;">
+</td>
 </tr>
 </table>
 
