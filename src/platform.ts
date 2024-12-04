@@ -58,7 +58,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
       wind_chill: 0,
       dew_point: 0,
       lightning_strike_last_epoch: 0,
-      lightning_strike_last_distance: 0
+      lightning_strike_last_distance: 0,
     };
     this.tempest_battery_level = 0;
 

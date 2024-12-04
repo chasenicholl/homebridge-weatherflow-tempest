@@ -639,9 +639,9 @@ class ContactSensor {
       const current_epoch_now = Math.floor(Date.now() / 1000);
       if (lightning_strike_last_epoch > 0
         && lightning_strike_last_distance > 0
-        && lightning_strike_last_distance <= trigger_distance 
+        && lightning_strike_last_distance <= trigger_distance
         && (current_epoch_now - lightning_strike_last_epoch) <= trigger_time) {
-          return 1; // trigger CONTACT_NOT_DETECTED.
+        return 1; // trigger CONTACT_NOT_DETECTED.
       }
       return 0;
     } catch(exception) {
@@ -652,7 +652,7 @@ class ContactSensor {
   }
 
   /**
-   * 
+   *
    */
   private handleCurrentStateGet(): number {
 

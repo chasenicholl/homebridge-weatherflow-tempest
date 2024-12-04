@@ -63,7 +63,7 @@ export class TempestSocket {
       uv: 0,
       brightness: 0,
       lightning_strike_last_epoch: 0,
-      lightning_strike_last_distance: 0
+      lightning_strike_last_distance: 0,
     };
     this.tempest_battery_level = 0;
     this.s = dgram.createSocket({ type: 'udp4', reuseAddr: reuse_address });
