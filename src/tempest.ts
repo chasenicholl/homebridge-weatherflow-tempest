@@ -10,27 +10,30 @@ axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
 
 export interface Observation {
   // temperature sensors
-  air_temperature: number;         // C, displayed according to Homebridge and HomeKit C/F settings
+  air_temperature: number;               // C, displayed according to Homebridge and HomeKit C/F settings
   feels_like: number;
   wind_chill: number;
   dew_point: number;
 
   // humidity sensor
-  relative_humidity: number;       // %
+  relative_humidity: number;             // %
 
   // fan and motion sensor
-  wind_avg: number;                // m/s, used for Fan speed %
-  wind_gust: number;               // m/s, used for motion sensor
+  wind_avg: number;                      // m/s, used for Fan speed %
+  wind_gust: number;                     // m/s, used for motion sensor
 
   // occupancy sensors
-  barometric_pressure: number;     // mbar
-  precip: number;                  // mm/min (minute sampling)
-  precip_accum_local_day: number;  // mm
-  wind_direction: number;          // degrees
-  solar_radiation: number;         // W/m^2
-  uv: number;                      // Index
+  barometric_pressure: number;           // mbar
+  precip: number;                        // mm/min (minute sampling)
+  precip_accum_local_day: number;        // mm
+  wind_direction: number;                // degrees
+  solar_radiation: number;               // W/m^2
+  uv: number;                            // Index
 
-  brightness: number;              // Lux
+  brightness: number;                    // Lux
+
+  lightning_strike_last_epoch: number;    // timestamp in seconds
+  lightning_strike_last_distance: number; // km
 }
 
 
@@ -38,13 +41,30 @@ export class TempestSocket {
 
   private log: Logger;
   private s: dgram.Socket;
-  private data: object | undefined;
+  private data: Observation;
   private tempest_battery_level: number;
 
   constructor(log: Logger, reuse_address: boolean) {
 
     this.log = log;
-    this.data = undefined;
+    this.data = {
+      air_temperature: 0,
+      feels_like: 0,
+      wind_chill: 0,
+      dew_point: 0,
+      relative_humidity: 0,
+      wind_avg: 0,
+      wind_gust: 0,
+      barometric_pressure: 0,
+      precip: 0,
+      precip_accum_local_day: 0,
+      wind_direction: 0,
+      solar_radiation: 0,
+      uv: 0,
+      brightness: 0,
+      lightning_strike_last_epoch: 0,
+      lightning_strike_last_distance: 0
+    };
     this.tempest_battery_level = 0;
     this.s = dgram.createSocket({ type: 'udp4', reuseAddr: reuse_address });
 
@@ -81,15 +101,17 @@ export class TempestSocket {
 
   private processReceivedData(data) {
 
-    if (data.type === 'obs_st') { // for Tempest
+    if (data.type === 'obs_st') { // Observation event
       this.setTempestData(data);
+    } else if (data.type === 'evt_strike') { // Lightening strike event
+      this.appendStrikeEvent(data);
     }
 
   }
 
-  private setTempestData(data): void {
+  private setTempestData(event): void {
 
-    const obs = data.obs[0];
+    const obs = event.obs[0];
     // const windLull = (obs[1] !== null) ? obs[1] : 0;
     const windSpeed = (obs[2] !== null) ? obs[2] * 2.2369 : 0; // convert to mph for heatindex calculation
     const T = (obs[7] * 9/5) + 32; // T in F for heatindex, feelsLike and windChill calculations
@@ -103,23 +125,30 @@ export class TempestSocket {
     // windChill only defined for wind speeds > 3 mph and temperature < 50F
     const windChill = ((windSpeed > 3) && (T < 50)) ? (35.74 + 0.6215*T - 35.75*(windSpeed**0.16) + 0.4275*T*(windSpeed**0.16)) : T;
 
-    this.data = {
-      air_temperature: obs[7],
-      feels_like: 5/9 * (feelsLike - 32), // convert back to C
-      wind_chill: 5/9 * (windChill - 32), // convert back to C
-      dew_point: obs[7] - ((100 - obs[8]) / 5.0), // Td = T - ((100 - RH)/5)
-      relative_humidity: obs[8],
-      wind_avg: obs[2],
-      wind_gust: obs[3],
-      barometric_pressure: obs[6],
-      precip: obs[12],
-      precip_accum_local_day: obs[12],
-      wind_direction: obs[4],
-      solar_radiation: obs[11],
-      uv: obs[10],
-      brightness: obs[9],
-    };
+    this.data.air_temperature = obs[7];
+    this.data.feels_like = 5/9 * (feelsLike - 32); // convert back to C
+    this.data.wind_chill = 5/9 * (windChill - 32); // convert back to C
+    this.data.dew_point = obs[7] - ((100 - obs[8]) / 5.0); // Td = T - ((100 - RH)/5)
+    this.data.relative_humidity = obs[8];
+    this.data.wind_avg = obs[2];
+    this.data.wind_gust = obs[3];
+    this.data.barometric_pressure = obs[6];
+    this.data.precip = obs[12];
+    this.data.precip_accum_local_day = obs[12];
+    this.data.wind_direction = obs[4];
+    this.data.solar_radiation = obs[11];
+    this.data.uv = obs[10];
+    this.data.brightness = obs[9];
     this.tempest_battery_level = Math.round((obs[16] - 1.8) * 100); // 2.80V = 100%, 1.80V = 0%
+
+  }
+
+  private appendStrikeEvent(data): void {
+
+    if (this.data) {
+      this.data.lightning_strike_last_epoch = data.evt[0];
+      this.data.lightning_strike_last_distance = data.evt[1];
+    }
 
   }
 

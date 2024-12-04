@@ -603,6 +603,67 @@ class BatterySensor {
 
 }
 
+class ContactSensor {
+  private service: Service;
+
+  constructor(
+    private readonly platform: WeatherFlowTempestPlatform,
+    private readonly accessory: PlatformAccessory,
+  ) {
+
+    this.service = this.accessory.getService(this.platform.Service.ContactSensor) ||
+    this.accessory.addService(this.platform.Service.ContactSensor);
+
+    // Create handlers for required characteristics
+    this.service.getCharacteristic(this.platform.Characteristic.ContactSensorState)
+      .onGet(this.handleCurrentStateGet.bind(this));
+
+    // Set initial value
+    this.service.getCharacteristic(this.platform.Characteristic.ContactSensorState).updateValue(0);
+
+    // Update value based on user defined global interval
+    const interval = (this.platform.config.interval as number || 10) * 1000;
+    setInterval( () => {
+      this.service.getCharacteristic(this.platform.Characteristic.ContactSensorState).updateValue(this.getState());
+    }, interval);
+
+  }
+
+  private getState(): number {
+
+    try {
+      const lightning_strike_last_epoch: number = this.platform.observation_data.lightning_strike_last_epoch;
+      const lightning_strike_last_distance: number = this.platform.observation_data.lightning_strike_last_distance;
+      const trigger_distance: number = this.accessory.context.device.contact_properties.trigger_distance;
+      const trigger_time: number = this.accessory.context.device.contact_properties.trigger_time;
+      const current_epoch_now = Math.floor(Date.now() / 1000);
+      if (lightning_strike_last_epoch > 0
+        && lightning_strike_last_distance > 0
+        && lightning_strike_last_distance <= trigger_distance 
+        && (current_epoch_now - lightning_strike_last_epoch) <= trigger_time) {
+          return 1; // trigger CONTACT_NOT_DETECTED.
+      }
+      return 0;
+    } catch(exception) {
+      this.platform.log.error(exception as string);
+      return 0;
+    }
+
+  }
+
+  /**
+   * 
+   */
+  private handleCurrentStateGet(): number {
+
+    this.platform.log.debug('Triggered GET CurrentRelativeHumidity');
+    const relative_humidity: number = this.getState();
+    return relative_humidity;
+
+  }
+
+}
+
 /**
  * Initialize Tempest Platform (only need to do once)
  */
@@ -644,7 +705,6 @@ export class WeatherFlowTempestPlatformAccessory {
     switch (this.accessory.context.device.sensor_type) {
       case 'Temperature Sensor':
         new TemperatureSensor(this.platform, this.accessory);
-
         // Add Battery to default Temperature air_temperature sensor
         if (this.accessory.context.device.temperature_properties.value_key === 'air_temperature') {
           new BatterySensor(this.platform, this.accessory);
@@ -664,6 +724,9 @@ export class WeatherFlowTempestPlatformAccessory {
         break;
       case 'Occupancy Sensor':
         new OccupancySensor(this.platform, this.accessory);
+        break;
+      case 'Contact Sensor':
+        new ContactSensor(this.platform, this.accessory);
         break;
     }
 

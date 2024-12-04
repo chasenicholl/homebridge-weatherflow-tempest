@@ -3,211 +3,237 @@
   "pluginType": "platform",
   "singular": false,
   "schema": {
-      "type": "object",
-      
-      "properties": {
-          "name": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true,
+        "default": "WeatherFlow Tempest Platform"
+      },
+      "local_api": {
+        "title": "Use Local API",
+        "type": "boolean",
+        "required": true,
+        "default": true
+      },
+      "local_api_shared": {
+        "title": "Share the Local API UDP port with other processes",
+        "type": "boolean",
+        "required": false,
+        "default": false
+      },
+      "token": {
+        "title": "Token",
+        "type": "string",
+        "default": "<Your API Token>",
+        "condition": {
+          "functionBody": "if (model.local_api != undefined && !model.local_api) { return true; } else { return false; };"
+        }
+      },
+      "station_id": {
+        "title": "Station ID (Integer of 5 digits)",
+        "type": "number",
+        "default": 0
+      },
+      "interval": {
+        "title": "Interval (seconds)",
+        "type": "integer",
+        "default": 10,
+        "minimum": 1,
+        "condition": {
+          "functionBody": "if (model.local_api != undefined && !model.local_api) { return true; } else { return false; };"
+        }
+      },
+      "units": {
+        "title": "Units",
+        "type": "string",
+        "enum": [
+          "Standard",
+          "Metric"
+        ],
+        "default": "Standard"
+      },
+      "sensors": {
+        "title": "Weather Sensors",
+        "description": "Enable WeatherFlow Tempest Sensors.",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
               "title": "Name",
               "type": "string",
-              "required": true,
-              "default": "WeatherFlow Tempest Platform"
-          },
-          "local_api": {
-            "title": "Use Local API",
-            "type": "boolean",
-            "required": true,
-            "default": true
-          },
-          "local_api_shared": {
-            "title": "Share the Local API UDP port with other processes",
-            "type": "boolean",
-            "required": false,
-            "default": false
-          },
-          "token": {
-              "title": "Token",
-              "type": "string",
-              "default": "<Your API Token>",
-              "condition": {
-                "functionBody": "if (model.local_api != undefined && !model.local_api) { return true; } else { return false; };"
-              }
-          },
-          "station_id": {
-              "title": "Station ID (Integer of 5 digits)",
-              "type": "number",
-              "default": 0
-          },
-          "interval": {
-              "title": "Interval (seconds)",
-              "type": "integer",
-              "default": 10,
-              "minimum": 1,
-              "condition": {
-                "functionBody": "if (model.local_api != undefined && !model.local_api) { return true; } else { return false; };"
-              }
-          },
-          "units": {
-              "title": "Units",
+              "required": true
+            },
+            "sensor_type": {
               "type": "string",
               "enum": [
-                  "Standard",
-                  "Metric"
+                "Temperature Sensor",
+                "Light Sensor",
+                "Humidity Sensor",
+                "Fan",
+                "Motion Sensor",
+                "Occupancy Sensor",
+                "Contact Sensor"
               ],
-              "default": "Standard"
-          },
-          "sensors": {
-              "title": "Weather Sensors",
-              "description": "Enable WeatherFlow Tempest Sensors.",
-              "type": "array",
-              "items": {
-                  "type": "object",
-                  "properties": {
-                      "name": {
-                          "title": "Name",
-                          "type": "string",
-                          "required": true
-                      },
-                      "sensor_type": {
-                          "type": "string",
-                          "enum": [
-                              "Temperature Sensor",
-                              "Light Sensor",
-                              "Humidity Sensor",
-                              "Fan",
-                              "Motion Sensor",
-                              "Occupancy Sensor"
-                          ],
-                          "default": "Temperature Sensor"
-                      },
-                      "fan_properties": {
-                          "title": "Fan Properties",
-                          "type": "object",
-                          "condition": {
-                            "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Fan') { return true; } else { return false; };"
-                          },
-                          "properties": {
-                              "value_key": {
-                                  "type": "string",
-                                  "enum": [
-                                      "wind_avg"
-                                  ]
-                              }
-                          }
-                      },
-                      "light_properties": {
-                          "title": "Light Properties",
-                          "type": "object",
-                          "condition": {
-                            "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Light Sensor') { return true; } else { return false; };"
-
-                          },
-                          "properties": {
-                              "value_key": {
-                                  "type": "string",
-                                  "enum": [
-                                      "brightness"
-                                  ]
-                              }
-                          }
-                      },
-                      "humidity_properties": {
-                          "title": "Humidity Properties",
-                          "type": "object",
-                          "condition": {
-                            "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Humidity Sensor') { return true; } else { return false; };"
-                          },
-                          "properties": {
-                              "value_key": {
-                                  "type": "string",
-                                  "enum": [
-                                      "relative_humidity"
-                                  ]
-                              }
-                          }
-                      },
-                      "temperature_properties": {
-                          "title": "Temperature Properties",
-                          "type": "object",
-                          "condition": {
-                            "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Temperature Sensor') { return true; } else { return false; };"
-                          },
-                          "properties": {
-                              "value_key": {
-                                  "type": "string",
-                                  "enum": [
-                                      "air_temperature",
-                                      "dew_point",
-                                      "feels_like",
-                                      "wind_chill"
-                                  ]
-                              }
-                          }
-                      },
-                      "motion_properties": {
-                          "title": "Motion Properties",
-                          "type": "object",
-                          "condition": {
-                            "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Motion Sensor') { return true; } else { return false; };"
-                          },
-                          "properties": {
-                              "value_key": {
-                                  "type": "string",
-                                  "enum": [
-                                      "wind_gust"
-                                  ]
-                              },
-                              "trigger_value": {
-                                  "type": "number",
-                                  "minimum": 1,
-                                  "description": "At what point (value) to trigger motion detected on/off (1 minimum)."
-                              }
-                          }
-                      },
-                      "occupancy_properties": {
-                          "title": "Occupancy Properties",
-                          "type": "object",
-                          "condition": {
-                            "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Occupancy Sensor') { return true; } else { return false; };"
-                          },
-                          "properties": {
-                              "value_key": {
-                                  "type": "string",
-                                  "enum": [
-                                      "barometric_pressure",
-                                      "precip",
-                                      "precip_accum_local_day",
-                                      "wind_direction",
-                                      "wind_gust",
-                                      "solar_radiation",
-                                      "uv"
-                                  ],
-                                  "description": "Note: `precip_accum_local_day` not supported when using Local API."
-                                },
-                              "trigger_value": {
-                                  "type": "number",
-                                  "minimum": 0,
-                                  "description": "At what point (value) to trigger occupancy detected on/off (0 minimum)."
-                              }
-                          }
-                      }
-                  }
+              "default": "Temperature Sensor"
+            },
+            "fan_properties": {
+              "title": "Fan Properties",
+              "type": "object",
+              "condition": {
+                "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Fan') { return true; } else { return false; };"
               },
-              "required": [
-                  "name",
-                  "sensor_type",
-                  "value_key"
-              ]
-          }
-      },
-      "required": ["local_api"],
-      "dependencies": {
-          "local_api": {
-              "not": {
-                  "type": "boolean",
-                  "const": true
+              "properties": {
+                "value_key": {
+                  "type": "string",
+                  "enum": [
+                    "wind_avg"
+                  ]
+                }
+              }
+            },
+            "light_properties": {
+              "title": "Light Properties",
+              "type": "object",
+              "condition": {
+                "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Light Sensor') { return true; } else { return false; };"
               },
-              "required": ["token", "station_id"]
+              "properties": {
+                "value_key": {
+                  "type": "string",
+                  "enum": [
+                    "brightness"
+                  ]
+                }
+              }
+            },
+            "humidity_properties": {
+              "title": "Humidity Properties",
+              "type": "object",
+              "condition": {
+                "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Humidity Sensor') { return true; } else { return false; };"
+              },
+              "properties": {
+                "value_key": {
+                  "type": "string",
+                  "enum": [
+                    "relative_humidity"
+                  ]
+                }
+              }
+            },
+            "temperature_properties": {
+              "title": "Temperature Properties",
+              "type": "object",
+              "condition": {
+                "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Temperature Sensor') { return true; } else { return false; };"
+              },
+              "properties": {
+                "value_key": {
+                  "type": "string",
+                  "enum": [
+                    "air_temperature",
+                    "dew_point",
+                    "feels_like",
+                    "wind_chill"
+                  ]
+                }
+              }
+            },
+            "motion_properties": {
+              "title": "Motion Properties",
+              "type": "object",
+              "condition": {
+                "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Motion Sensor') { return true; } else { return false; };"
+              },
+              "properties": {
+                "value_key": {
+                  "type": "string",
+                  "enum": [
+                    "wind_gust"
+                  ]
+                },
+                "trigger_value": {
+                  "type": "number",
+                  "minimum": 1,
+                  "description": "At what point (value) to trigger motion detected on/off (1 minimum)."
+                }
+              }
+            },
+            "occupancy_properties": {
+              "title": "Occupancy Properties",
+              "type": "object",
+              "condition": {
+                "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Occupancy Sensor') { return true; } else { return false; };"
+              },
+              "properties": {
+                "value_key": {
+                  "type": "string",
+                  "enum": [
+                    "barometric_pressure",
+                    "precip",
+                    "precip_accum_local_day",
+                    "wind_direction",
+                    "wind_gust",
+                    "solar_radiation",
+                    "uv"
+                  ],
+                  "description": "Note: `precip_accum_local_day` not supported when using Local API."
+                },
+                "trigger_value": {
+                  "type": "number",
+                  "minimum": 0,
+                  "description": "At what point (value) to trigger occupancy detected on/off (0 minimum)."
+                }
+              }
+            },
+            "contact_properties": {
+              "title": "Contact Properties",
+              "type": "object",
+              "condition": {
+                "functionBody": "if (model.sensors[arrayIndices] && model.sensors[arrayIndices].sensor_type && model.sensors[arrayIndices].sensor_type === 'Contact Sensor') { return true; } else { return false; };"
+              },
+              "description": "The Contact Sensor is utilized to trigger automations in response to lightning strikes.",
+              "properties": {
+                "trigger_distance": {
+                  "type": "number",
+                  "minimum": 0,
+                  "default": 0,
+                  "description": "The minimum distance (in kilometers) at which the strike was detected to activate the contact sensor."
+                },
+                "trigger_time": {
+                  "type": "number",
+                  "minimum": 0,
+                  "default": 0,
+                  "description": "The minimum time interval (in seconds) between the detected strike to activate the contact sensor."
+                }
+              }
+            }
           }
+        },
+        "required": [
+          "name",
+          "sensor_type",
+          "value_key"
+        ]
       }
+    },
+    "required": [
+      "local_api"
+    ],
+    "dependencies": {
+      "local_api": {
+        "not": {
+          "type": "boolean",
+          "const": true
+        },
+        "required": [
+          "token",
+          "station_id"
+        ]
+      }
+    }
   }
 }

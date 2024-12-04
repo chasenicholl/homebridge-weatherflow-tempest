@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v4.2.0
+* Added the Lightning Strike Contact Sensor, allowing configuration of both the minimum distance and time thresholds for triggering CONTACT_NOT_DETECTED.
+
 ## v4.1.1
 * Update README.md to correctly display "Tempest" logo.
 * Update README.md to include `station_id` in "Local API Config Example".
