@@ -666,7 +666,7 @@ class ContactSensor {
 
     this.platform.log.debug('Triggered GET handleCurrentStateGet for Contact Sensor state');
     return this.getState();
-  
+
   }
 
 }
