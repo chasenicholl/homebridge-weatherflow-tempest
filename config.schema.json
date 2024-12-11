@@ -202,12 +202,6 @@
                   "minimum": 0,
                   "default": 0,
                   "description": "The minimum distance (in kilometers) at which the strike was detected to activate the contact sensor."
-                },
-                "trigger_time": {
-                  "type": "number",
-                  "minimum": 0,
-                  "default": 0,
-                  "description": "The minimum time interval (in seconds) between the detected strike to activate the contact sensor."
                 }
               }
             }

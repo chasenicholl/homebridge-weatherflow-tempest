@@ -2,15 +2,15 @@
 
 [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins) ![npm-version](https://badgen.net/npm/v/homebridge-weatherflow-tempest?icon=npm&label) ![npm-downloads](https://badgen.net/npm/dt/homebridge-weatherflow-tempest?icon=npm&label) [![donate](https://badgen.net/badge/donate/paypal/yellow)](https://paypal.me/chasenicholl)
 
-<table align="center" border="0">
-<tr>
-<td sytle="border: 0px;">
-<img src="https://user-images.githubusercontent.com/3979615/78016493-9b89a800-7396-11ea-9442-414ad9ffcdf2.png" width="200" />
-</td>
-<td sytle="border: 0px;">
-<img src="https://t9s9z3m3.rocketcdn.me/wp-content/uploads/2016/05/Tempest-powered-by-01.svg" width="250" />
-</td>
-</tr>
+<table align="center">
+  <tr>
+    <td>
+      <img src="https://user-images.githubusercontent.com/3979615/78016493-9b89a800-7396-11ea-9442-414ad9ffcdf2.png" width="200" />
+    </td>
+    <td>
+      <img src="https://t9s9z3m3.rocketcdn.me/wp-content/uploads/2016/05/Tempest-powered-by-01.svg" width="250" />
+    </td>
+  </tr>
 </table>
 
 *New* in v4.0.0 Local API Support!
@@ -52,7 +52,6 @@ Local API is now supported which requires no authentication. If you choose to us
 - `sensors[].motion_properties.trigger_value`: _(Required with Motion Sensor)_ At what point (value) to trigger motion detected on/off. Minimum 1.
 - `sensors[].occupancy_properties.trigger_value`: _(Required with Occupancy Sensor)_ At what point (value) to trigger occupancy detected on/off. Minimum 0.
 - `sensors[].contact_properties.trigger_distance`: _(Required with Contact Sensor)_ The minimum distance (in kilometers) at which the strike was detected to activate the contact sensor.
-- `sensors[].contact_properties.trigger_time`: _(Required with Contact Sensor)_ The minimum time interval (in seconds) between the detected strike to activate the contact sensor.
 
 `{1}`  Replace with Sensor: temperature, humidity, light, fan 
 
@@ -177,8 +176,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
           "name": "Lightening Detector",
           "sensor_type": "Contact Sensor",
           "contact_properties": {
-              "trigger_distance": 10,
-              "trigger_time": 120
+              "trigger_distance": 10
           }
       }
   ],
@@ -300,8 +298,7 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
           "name": "Lightening Detector",
           "sensor_type": "Contact Sensor",
           "contact_properties": {
-              "trigger_distance": 10,
-              "trigger_time": 120
+              "trigger_distance": 10
           }
       }
   ],

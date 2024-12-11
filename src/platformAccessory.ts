@@ -605,12 +605,13 @@ class BatterySensor {
 
 class ContactSensor {
   private service: Service;
-
+  private state: number;
   constructor(
     private readonly platform: WeatherFlowTempestPlatform,
     private readonly accessory: PlatformAccessory,
   ) {
 
+    this.state = 0;
     this.service = this.accessory.getService(this.platform.Service.ContactSensor) ||
     this.accessory.addService(this.platform.Service.ContactSensor);
 
@@ -621,11 +622,20 @@ class ContactSensor {
     // Set initial value
     this.service.getCharacteristic(this.platform.Characteristic.ContactSensorState).updateValue(0);
 
-    // Update value based on user defined global interval
-    const interval = (this.platform.config.interval as number || 10) * 1000;
+    // Update value based on a 1 second check interval
+    let tick = 0;
     setInterval( () => {
+      tick++;
+      if (tick % 5 === 0) {
+        tick = 0;
+        // Reset Contact sensor every 5 seconds if CONTACT_NOT_DETECTED
+        if (this.state === 1) {
+          this.state = 0;
+          this.service.getCharacteristic(this.platform.Characteristic.ContactSensorState).updateValue(0); // CONTACT_DETECTED
+        }
+      }
       this.service.getCharacteristic(this.platform.Characteristic.ContactSensorState).updateValue(this.getState());
-    }, interval);
+    }, 1000);
 
   }
 
@@ -635,19 +645,20 @@ class ContactSensor {
       const lightning_strike_last_epoch: number = this.platform.observation_data.lightning_strike_last_epoch;
       const lightning_strike_last_distance: number = this.platform.observation_data.lightning_strike_last_distance;
       const trigger_distance: number = this.accessory.context.device.contact_properties.trigger_distance;
-      const trigger_time: number = this.accessory.context.device.contact_properties.trigger_time;
       const current_epoch_now = Math.floor(Date.now() / 1000);
       if (lightning_strike_last_epoch > 0
         && lightning_strike_last_distance > 0
         && lightning_strike_last_distance <= trigger_distance
-        && (current_epoch_now - lightning_strike_last_epoch) <= trigger_time) {
-        return 1; // trigger CONTACT_NOT_DETECTED.
+        && (current_epoch_now - lightning_strike_last_epoch) <= 5) {
+        this.state = 1; // trigger CONTACT_NOT_DETECTED.
+      } else {
+        this.state = 0;
       }
-      return 0;
     } catch(exception) {
       this.platform.log.error(exception as string);
-      return 0;
+      this.state = 0;
     }
+    return this.state;
 
   }
 
@@ -655,7 +666,7 @@ class ContactSensor {
 
     this.platform.log.debug('Triggered GET handleCurrentStateGet for Contact Sensor state');
     return this.getState();
-
+  
   }
 
 }
