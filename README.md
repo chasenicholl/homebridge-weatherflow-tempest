@@ -3,10 +3,14 @@
 [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins) ![npm-version](https://badgen.net/npm/v/homebridge-weatherflow-tempest?icon=npm&label) ![npm-downloads](https://badgen.net/npm/dt/homebridge-weatherflow-tempest?icon=npm&label) [![donate](https://badgen.net/badge/donate/paypal/yellow)](https://paypal.me/chasenicholl)
 
 <table align="center">
-<tr>
-<td><img src="https://user-images.githubusercontent.com/3979615/78016493-9b89a800-7396-11ea-9442-414ad9ffcdf2.png" width="200"></td>
-<td><img src="https://t9s9z3m3.rocketcdn.me/wp-content/uploads/2016/05/Tempest-powered-by-01.svg" width="250"></td>
-</tr>
+  <tr>
+    <td>
+      <img src="https://user-images.githubusercontent.com/3979615/78016493-9b89a800-7396-11ea-9442-414ad9ffcdf2.png" width="200" />
+    </td>
+    <td>
+      <img src="https://t9s9z3m3.rocketcdn.me/wp-content/uploads/2016/05/Tempest-powered-by-01.svg" width="250" />
+    </td>
+  </tr>
 </table>
 
 *New* in v4.0.0 Local API Support!
@@ -47,6 +51,7 @@ Local API is now supported which requires no authentication. If you choose to us
 - `sensors[].{1}_properties.value_key`: _(Required)_ Which REST API response body key to target for its value. You can find the available value_keys in the table below.
 - `sensors[].motion_properties.trigger_value`: _(Required with Motion Sensor)_ At what point (value) to trigger motion detected on/off. Minimum 1.
 - `sensors[].occupancy_properties.trigger_value`: _(Required with Occupancy Sensor)_ At what point (value) to trigger occupancy detected on/off. Minimum 0.
+- `sensors[].contact_properties.trigger_distance`: _(Required with Contact Sensor)_ The minimum distance (in kilometers) at which the strike was detected to activate the contact sensor.
 
 `{1}`  Replace with Sensor: temperature, humidity, light, fan 
 
@@ -166,6 +171,13 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
               "value_key": "wind_direction",
               "trigger_value": 360
           }
+      },
+      {
+          "name": "Lightening Detector",
+          "sensor_type": "Contact Sensor",
+          "contact_properties": {
+              "trigger_distance": 10
+          }
       }
   ],
   "platform": "WeatherFlowTempest"
@@ -280,6 +292,13 @@ sensor_type `{2}` | value_key | metric units | std units | additional_properties
           "occupancy_properties": {
               "value_key": "wind_direction",
               "trigger_value": 360
+          }
+      },
+      {
+          "name": "Lightening Detector",
+          "sensor_type": "Contact Sensor",
+          "contact_properties": {
+              "trigger_distance": 10
           }
       }
   ],
