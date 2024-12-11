@@ -620,21 +620,19 @@ class ContactSensor {
       .onGet(this.handleCurrentStateGet.bind(this));
 
     // Set initial value
-    this.service.getCharacteristic(this.platform.Characteristic.ContactSensorState).updateValue(0);
+    this.setCharacteristicState(0); // CONTACT_DETECTED
 
     // Update value based on a 1 second check interval
     let tick = 0;
     setInterval( () => {
       tick++;
-      if (tick % 5 === 0) {
+      if (tick === 5) { // Reset Contact sensor every 5 seconds if CONTACT_NOT_DETECTED
         tick = 0;
-        // Reset Contact sensor every 5 seconds if CONTACT_NOT_DETECTED
         if (this.state === 1) {
-          this.state = 0;
-          this.service.getCharacteristic(this.platform.Characteristic.ContactSensorState).updateValue(0); // CONTACT_DETECTED
+          this.setCharacteristicState(0);
         }
       }
-      this.service.getCharacteristic(this.platform.Characteristic.ContactSensorState).updateValue(this.getState());
+      this.setCharacteristicState(this.getState());
     }, 1000);
 
   }
@@ -650,15 +648,20 @@ class ContactSensor {
         && lightning_strike_last_distance > 0
         && lightning_strike_last_distance <= trigger_distance
         && (current_epoch_now - lightning_strike_last_epoch) <= 5) {
-        this.state = 1; // trigger CONTACT_NOT_DETECTED.
-      } else {
-        this.state = 0;
+        return 1; // trigger CONTACT_NOT_DETECTED.
       }
+      return 0;
     } catch(exception) {
       this.platform.log.error(exception as string);
-      this.state = 0;
+      return 0;
     }
-    return this.state;
+
+  }
+
+  private setCharacteristicState(state: number): void {
+
+    this.state = state;
+    this.service.getCharacteristic(this.platform.Characteristic.ContactSensorState).updateValue(state);
 
   }
 
