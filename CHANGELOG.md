@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v4.1.3
+* Add option for node "22.x" in build.yml
+* Update dependent plug-ins to current version. Confirm no build errors.
+
 ## v4.1.2
 * Add option for node "^22.10.0" in `package.json` and `package-lock.json`.
 
