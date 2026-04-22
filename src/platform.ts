@@ -44,6 +44,7 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
   public tempest_device_id!: number;     // Tempest device ID
 
   private activeAccessory: PlatformAccessory[] = []; // array of active Tempest sensors
+  private udpStale: boolean = false;
 
   constructor(
     public readonly log: Logger,
@@ -247,6 +248,10 @@ export class WeatherFlowTempestPlatform implements DynamicPlatformPlugin {
             `No UDP broadcast received in ${Math.round(staleSec)} seconds. ` +
             'The Tempest hub may be offline or unreachable.',
           );
+          this.udpStale = true;
+        } else if (this.udpStale) {
+          this.log.info('UDP broadcasts resumed; Tempest hub is reachable again.');
+          this.udpStale = false;
         }
       }
       // Update values
